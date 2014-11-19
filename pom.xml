@@ -8,5 +8,4 @@
   <packaging>jar</packaging>
 
   <name>GScrum IntelliJ plugin</name>
-  <url>http://maven.apache.org</url>
 </project>

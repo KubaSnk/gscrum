@@ -1,46 +1,41 @@
 <idea-plugin version="2">
-  <id>com.yourcompany.unique.plugin.id</id>
-  <name>Plugin display name here</name>
-  <version>1.0</version>
-  <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+    <id>com.rwteam.gscrum</id>
+    <name>gscrum</name>
+    <version>1.0</version>
+    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">GScrum Team</vendor>
 
-  <description><![CDATA[
+    <description><![CDATA[
       Enter short description for your plugin here.<br>
       <em>most HTML tags may be used</em>
     ]]></description>
 
-  <change-notes><![CDATA[
+    <change-notes><![CDATA[
       Add change notes here.<br>
       <em>most HTML tags may be used</em>
     ]]>
-  </change-notes>
+    </change-notes>
 
-  <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="131"/>
+    <idea-version since-build="131"/>
 
-  <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
-       on how to target different products -->
-  <!-- uncomment to enable plugin in all products
-  <depends>com.intellij.modules.lang</depends>
-  -->
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="GScrum" icon="/myPackage/icon.png" anchor="right"
+                    factoryClass="com.rwteam.gscrum.view.GSMainWindow">
+        </toolWindow>
+    </extensions>
 
-  <extensions defaultExtensionNs="com.intellij">
-    <!-- Add your extensions here -->
-  </extensions>
+    <application-components>
+    </application-components>
 
-  <application-components>
-    <!-- Add your application components here -->
-  </application-components>
+    <project-components>
+    </project-components>
 
-  <project-components>
-    <!-- Add your project components here -->
-  </project-components>
 
-  <actions>
-    <!-- Add your actions here -->
-      <action id="TestAction" class="TestAction" text="TestActionName" description="fsdfsd">
-          <add-to-group group-id="MainMenu" anchor="first"/>
-      </action>
-  </actions>
+    <actions>
+        <!--<group id="MyPlugin.SampleMenu" text="_Sample Menu" description="Sample menu">-->
+            <!--<add-to-group group-id="MainMenu" anchor="last"/>-->
+            <!--<action id="Myplugin.Textboxes" class="TestAction" text="Text _Soxesq" description="A test menu item"/>-->
+            <!--<action id="Myplugin.Dialogs" class="TestAction" text="Show _Dialog" description="A test menu item"/>-->
+        <!--</group>-->
+    </actions>
 
 </idea-plugin>

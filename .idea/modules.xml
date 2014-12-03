@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/intellijGscrupPlugin.iml" filepath="$PROJECT_DIR$/intellijGscrupPlugin.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../intellijGscrupPluginModule/intellijGscrupPluginModule.iml" filepath="$PROJECT_DIR$/../intellijGscrupPluginModule/intellijGscrupPluginModule.iml" />
-    </modules>
-  </component>
-</project>

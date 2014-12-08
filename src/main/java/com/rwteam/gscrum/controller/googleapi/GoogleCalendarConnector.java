@@ -97,7 +97,7 @@ public class GoogleCalendarConnector {
                 System.out.println("-----------------------------------------------");
                 display(entry);
                 List<Event> items = client.events().list(entry.getId()).execute().getItems();
-                items.stream().forEach(e-> System.out.println(e.toString()));
+//                items.stream().forEach(e-> System.out.println(e.toString()));
             }
         }
     }

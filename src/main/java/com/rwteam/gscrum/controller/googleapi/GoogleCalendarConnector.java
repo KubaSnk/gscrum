@@ -48,18 +48,20 @@ public class GoogleCalendarConnector {
     private static Credential authorize() throws Exception {
 
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(GoogleCalendarConnector.class.getResourceAsStream("/client_secrets.json")));
-        if (clientSecrets.getDetails().getClientId().startsWith("Enter") || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-            System.out.println("Enter Client ID and Secret from https://code.google.com/apis/console/?api=calendar "
-                    + "into calendar-cmdline-sample/src/main/resources/client_secrets.json");
-            System.exit(1);
-        }
+
+//        if (clientSecrets.getDetails().getClientId().startsWith("Enter") || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
+//            System.out.println("Enter Client ID and Secret from https://code.google.com/apis/console/?api=calendar "
+//                    + "into calendar-cmdline-sample/src/main/resources/client_secrets.json");
+//            System.exit(1);
+//        }
         // set up authorization code flow
 
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY, clientSecrets, Collections.singleton(CalendarScopes.CALENDAR))
-                .setDataStoreFactory(dataStoreFactory).build();
+                .setDataStoreFactory(dataStoreFactory)
+                .build();
 
-        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("gscrumplugin");
+        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
     }
 
     public static void main(String[] args) {
@@ -97,6 +99,9 @@ public class GoogleCalendarConnector {
                 System.out.println("-----------------------------------------------");
                 display(entry);
                 List<Event> items = client.events().list(entry.getId()).execute().getItems();
+                for(Event ev : items) {
+                    System.out.println(ev);
+                }
 //                items.stream().forEach(e-> System.out.println(e.toString()));
             }
         }
@@ -140,6 +145,14 @@ public class GoogleCalendarConnector {
         CalendarList feed = client.calendarList().list().execute();
 
         display(feed);
+    }
+
+    public CalendarList getCalendars() throws IOException {
+        return client.calendarList().list().execute();
+    }
+
+    public List<Event> getEventsForCalendarID(String calendarID) throws IOException {
+        return client.events().list(calendarID).execute().getItems();
     }
 
     public void connect() throws Exception {

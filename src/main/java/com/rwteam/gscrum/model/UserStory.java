@@ -1,5 +1,6 @@
 package com.rwteam.gscrum.model;
 
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -17,6 +18,15 @@ public class UserStory {
     Date deadlineDate;
     Integer estimatedStoryPoints;
     Integer spentStoryPoints;
+    Collection<Task> taskCollection;
+
+    public Collection<Task> getTaskCollection() {
+        return taskCollection;
+    }
+
+    public void setTaskCollection(Collection<Task> taskCollection) {
+        this.taskCollection = taskCollection;
+    }
 
     public String getId() {
         return id;
@@ -105,4 +115,27 @@ public class UserStory {
     public void setSpentStoryPoints(Integer spentStoryPoints) {
         this.spentStoryPoints = spentStoryPoints;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
+
+//    @Override
+//    public String toString() {
+//        return "UserStory{" +
+//                "id='" + id + '\'' +
+//                ", author='" + author + '\'' +
+//                ", title='" + title + '\'' +
+//                ", description='" + description + '\'' +
+//                ", priority='" + priority + '\'' +
+//                ", status='" + status + '\'' +
+//                ", startDate=" + startDate +
+//                ", endDate=" + endDate +
+//                ", deadlineDate=" + deadlineDate +
+//                ", estimatedStoryPoints=" + estimatedStoryPoints +
+//                ", spentStoryPoints=" + spentStoryPoints +
+//                ", taskCollection=" + taskCollection +
+//                '}';
+//    }
 }

@@ -114,4 +114,28 @@ public class Task {
     public void setUserStoryID(String userStoryID) {
         this.userStoryID = userStoryID;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
+
+
+    public String getAllInfo() {
+        return "Task{" +
+                "\nid='" + id + '\'' +
+                "\nauthor='" + author + '\'' +
+                "\nname='" + name + '\'' +
+                "\ndescription='" + description + '\'' +
+                "\nassignedPerson='" + assignedPerson + '\'' +
+                "\npriority='" + priority + '\'' +
+                "\nstatus='" + status + '\'' +
+                "\nstartDate=" + startDate +
+                "\nendDate=" + endDate +
+                "\nestimatedHours=" + estimatedHours +
+                "\nspentHours=" + spentHours +
+                "\nuserStoryID='" + userStoryID + '\'' +
+                "\n}";
+
+    }
 }

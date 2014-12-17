@@ -1,6 +1,5 @@
 package com.rwteam.gscrum.view;
 
-import com.google.api.services.calendar.model.CalendarList;
 import com.google.api.services.calendar.model.CalendarListEntry;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -8,68 +7,125 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 /**
  * Created by wrabel on 11/30/2014.
  */
 public class GSMainWindow implements ToolWindowFactory {
+    private JButton btnLogin;
+    private JLabel lblLoginStatus;
+    private JButton btnLoadCalendarInfo;
+    private DefaultComboBoxModel<String> cbxChooseCalendarModel;
+    private JComboBox<String> cbxChooseCalendar;
+    private DefaultListModel listEventsModel;
+    private JList<String> listEvents;
+    private JTextArea txtEvent;
+
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
         final Container container = toolWindow.getComponent().getParent();
         container.setLayout(null);
 
-        JButton loginButton = new JButton("Login");
-        loginButton.setSize(200, 100);
-        container.add(loginButton);
+        btnLogin = new JButton("Login");
+        lblLoginStatus = new JLabel("You are not logged");
+        btnLoadCalendarInfo = new JButton("Refresh calendar info");
+        cbxChooseCalendarModel = new DefaultComboBoxModel<String>();
+        cbxChooseCalendar = new JComboBox<String>(cbxChooseCalendarModel);
+        listEventsModel = new DefaultListModel();
+        listEvents = new JList<String>(listEventsModel);
+        txtEvent = new JTextArea();
 
-        final JTextArea jTextArea = new JTextArea();
-        jTextArea.setBounds(0, 100, 600, 300);
-        container.add(jTextArea);
+        btnLogin.setBounds(10, 10, 150, 30);
+        lblLoginStatus.setBounds(180, 10, 200, 30);
+        cbxChooseCalendar.setBounds(10, 50, 250, 30);
+        btnLoadCalendarInfo.setBounds(270, 50, 150, 30);
+        listEvents.setBounds(10, 90, 150, 500);
+        txtEvent.setBounds(170,90, 500, 500);
 
-        final DefaultListModel listModel = new DefaultListModel();
-        final JList<String> stringJList = new JList<String>(listModel);
-        stringJList.setBounds(0, 410, 600, 400);
-        container.add(stringJList);
+        container.add(btnLogin);
+        container.add(lblLoginStatus);
+        container.add(btnLoadCalendarInfo);
+        container.add(cbxChooseCalendar);
+        container.add(listEvents);
+        container.add(txtEvent);
 
-        loginButton.addActionListener(new AbstractAction() {
+        cbxChooseCalendar.setEnabled(false);
+        btnLoadCalendarInfo.setEnabled(false);
+
+
+
+        btnLogin.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Button login handler");
                 try {
                     GoogleCalendarConnector.getInstance().connect();
+                    lblLoginStatus.setText("Successfully logged");
+                    btnLogin.setEnabled(false);
+                    populateCalendarComboBox();
 
-                    StringBuilder stringBuilder = new StringBuilder();
-                    CalendarList calendars = GoogleCalendarConnector.getInstance().getCalendars();
-                    for (CalendarListEntry entry : calendars.getItems()) {
-
-                        stringBuilder.append("ID: " + entry.getId()).append("\n");
-                        stringBuilder.append("Summary: " + entry.getSummary()).append("\n");
-                        if (entry.getDescription() != null) {
-                            stringBuilder.append("Description: " + entry.getDescription()).append("\n");
-                        }
-                        stringBuilder.append("-----------------").append("\n");
-
-                        stringBuilder.append(entry.toString()).append("\n");
-
-
-                        java.util.List<com.google.api.services.calendar.model.Event> items = GoogleCalendarConnector.getInstance().getEventsForCalendarID(entry.getId());
-                        for (com.google.api.services.calendar.model.Event ev : items) {
-                            System.out.println(ev);
-                            if (ev != null && ev.getDescription() != null)
-                                listModel.addElement(ev.getDescription());
-                        }
-
-                    }
-                    jTextArea.setText(stringBuilder.toString());
                 } catch (Exception e1) {
-                    jTextArea.setText(e1.toString());
+                    lblLoginStatus.setText("Error while logging");
                     e1.printStackTrace();
                 }
             }
         });
 
+        btnLoadCalendarInfo.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
 
+                listEventsModel.clear();
+                try {
+
+                    String currentCalendarId = (String) cbxChooseCalendarModel.getSelectedItem();
+                    if (currentCalendarId != null) {
+                        java.util.List<com.google.api.services.calendar.model.Event> items = GoogleCalendarConnector.getInstance().getEventsForCalendarID(currentCalendarId);
+                        for (com.google.api.services.calendar.model.Event ev : items) {
+                            System.out.println(ev);
+                            if (ev != null && ev.getDescription() != null)
+                                listEventsModel.addElement(ev.getDescription());
+                        }
+                    }
+                } catch (IOException e2) {
+                    e2.printStackTrace();
+                }
+            }
+        });
+
+        listEvents.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                System.out.println("Events list selection changed");
+
+                String eventText = listEvents.getSelectedValue();
+                if (eventText != null) {
+                    txtEvent.setText(eventText);
+                }
+            }
+        });
     }
+
+    private void populateCalendarComboBox() {
+        cbxChooseCalendarModel.removeAllElements();
+        try {
+            for (CalendarListEntry entry : GoogleCalendarConnector.getInstance().getCalendars().getItems()) {
+                System.out.println("Adding calendar to comboBox: " + entry.getId());
+                cbxChooseCalendarModel.addElement(entry.getId());
+                cbxChooseCalendar.setEnabled(true);
+                btnLoadCalendarInfo.setEnabled(true);
+            }
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            cbxChooseCalendar.setEnabled(false);
+            btnLoadCalendarInfo.setEnabled(false);
+        }
+    }
+
+
 }

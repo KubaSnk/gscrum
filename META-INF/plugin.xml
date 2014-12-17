@@ -18,7 +18,7 @@
     <idea-version since-build="131"/>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="GScrum" icon="/myPackage/icon.png" anchor="right"
+        <toolWindow id="GScrum"  anchor="right"
                     factoryClass="com.rwteam.gscrum.view.GSMainWindow">
 
         </toolWindow>

@@ -18,6 +18,8 @@ public class UserStoryParser {
 
         String value = event.getDescription();
 
+
+        Event event1 = new Event();
         UserStory userStory = new UserStory();
 
 

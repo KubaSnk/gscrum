@@ -44,7 +44,8 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/idea.jar</systemPath>
-        </dependency><dependency>
+        </dependency>
+        <dependency>
             <groupId>org.idea</groupId>
             <artifactId>openapi</artifactId>
             <version>1.0</version>
@@ -82,6 +83,13 @@
         <!--<artifactId>google-api-services-taskqueue</artifactId>-->
         <!--<version>LATEST</version>-->
         <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>com.google.apis</groupId>-->
+            <!--<artifactId>google-api-services-tasks</artifactId>-->
+            <!--<version>v1-rev35-1.19.0</version>-->
+        <!--</dependency>-->
+
+
         <dependency>
             <groupId>com.google.http-client</groupId>
             <artifactId>google-http-client-jackson2</artifactId>

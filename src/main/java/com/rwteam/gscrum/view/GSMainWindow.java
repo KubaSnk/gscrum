@@ -79,8 +79,8 @@ public class GSMainWindow implements ToolWindowFactory {
                 try {
                     GoogleCalendarConnector.getInstance().connect();
                     lblLoginStatus.setText("Successfully logged");
-                    btnLogin.setEnabled(false);
                     populateCalendarComboBox();
+                    btnLogin.setEnabled(false);
 
                 } catch (Exception e1) {
                     lblLoginStatus.setText("Error while logging");

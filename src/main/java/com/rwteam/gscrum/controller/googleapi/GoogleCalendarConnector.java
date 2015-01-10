@@ -11,9 +11,12 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.calendar.*;
+import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.*;
-import com.google.api.services.calendar.model.Calendar;
+import com.google.api.services.tasks.Tasks;
+import com.google.api.services.tasks.TasksScopes;
+import com.google.api.services.tasks.model.TaskList;
+import com.google.api.services.tasks.model.TaskLists;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,12 +31,15 @@ import java.util.TimeZone;
 public class GoogleCalendarConnector {
 
     private static final String APPLICATION_NAME = "gscrumplugin";
-    private static final java.io.File DATA_STORE_DIR = new java.io.File(System.getProperty("user.home"), ".store/calendar_sample");
+    private static final java.io.File CALENDAR_DATA_STORE_DIR = new java.io.File("D:/userdata/wrabel/.store/calendar_sample");
+    private static final java.io.File TASKS_DATA_STORE_DIR = new java.io.File("D:/userdata/wrabel/.store/tasks_sample");
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     public static GoogleCalendarConnector INSTANCE = new GoogleCalendarConnector();
     private static FileDataStoreFactory dataStoreFactory;
+    private static FileDataStoreFactory tasksDataStoreFactory;
     private static HttpTransport httpTransport;
     private static com.google.api.services.calendar.Calendar client;
+    Tasks clientTasks;
 
     private GoogleCalendarConnector() {
 
@@ -60,6 +66,25 @@ public class GoogleCalendarConnector {
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY, clientSecrets, Collections.singleton(CalendarScopes.CALENDAR))
                 .setDataStoreFactory(dataStoreFactory)
+                .build();
+
+        return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
+    }
+
+    private static Credential authorizeTasks() throws Exception {
+
+        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(GoogleCalendarConnector.class.getResourceAsStream("/client_secrets.json")));
+
+//        if (clientSecrets.getDetails().getClientId().startsWith("Enter") || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
+//            System.out.println("Enter Client ID and Secret from https://code.google.com/apis/console/?api=calendar "
+//                    + "into calendar-cmdline-sample/src/main/resources/client_secrets.json");
+//            System.exit(1);
+//        }
+        // set up authorization code flow
+
+
+        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY, clientSecrets, Collections.singleton(TasksScopes.TASKS))
+                .setDataStoreFactory(tasksDataStoreFactory)
                 .build();
 
         return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
@@ -100,7 +125,7 @@ public class GoogleCalendarConnector {
                 System.out.println("-----------------------------------------------");
                 display(entry);
                 List<Event> items = client.events().list(entry.getId()).execute().getItems();
-                for(Event ev : items) {
+                for (Event ev : items) {
                     System.out.println(ev);
                 }
 //                items.stream().forEach(e-> System.out.println(e.toString()));
@@ -148,6 +173,16 @@ public class GoogleCalendarConnector {
         display(feed);
     }
 
+    public void showTasks() throws IOException {
+        System.out.println("Show Tasks");
+        TaskLists feed = clientTasks.tasklists().list().execute();
+
+        for(TaskList t : feed.getItems()){
+            System.out.println(t.getTitle());
+        }
+    }
+
+
     public CalendarList getCalendars() throws IOException {
         return client.calendarList().list().execute();
     }
@@ -158,9 +193,15 @@ public class GoogleCalendarConnector {
 
     public void connect() throws Exception {
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
+        dataStoreFactory = new FileDataStoreFactory(CALENDAR_DATA_STORE_DIR);
         Credential credential = authorize();
+        tasksDataStoreFactory = new FileDataStoreFactory(TASKS_DATA_STORE_DIR);
+        Credential credentialTasks = authorizeTasks();
+
         client = new com.google.api.services.calendar.Calendar.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
+
+        clientTasks = new Tasks.Builder(httpTransport, JSON_FACTORY, credentialTasks).setApplicationName(APPLICATION_NAME).build();
+        showTasks();
     }
 
 }

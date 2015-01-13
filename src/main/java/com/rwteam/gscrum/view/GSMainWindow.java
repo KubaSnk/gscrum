@@ -4,8 +4,7 @@ import com.google.api.services.calendar.model.CalendarListEntry;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.rwteam.gscrum.controller.googleapi.DataProvider;
-import com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector;
+import com.rwteam.gscrum.controller.GSMainWindowController;
 import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
 
@@ -14,8 +13,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by wrabel on 11/30/2014.
@@ -34,6 +32,8 @@ public class GSMainWindow implements ToolWindowFactory {
 
 
     private JTextArea txtTaskDetails;
+    private GSMainWindowController controller = new GSMainWindowController(this);
+    private boolean isUserLogged = false;
 
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
@@ -48,7 +48,7 @@ public class GSMainWindow implements ToolWindowFactory {
         listUserStoriesModel = new DefaultListModel();
         listUserStories = new JList<UserStory>(listUserStoriesModel);
         listTasksModel = new DefaultListModel();
-        listTasks =new JList<Task>(listTasksModel);
+        listTasks = new JList<Task>(listTasksModel);
         txtTaskDetails = new JTextArea();
 
         btnLogin.setBounds(10, 10, 150, 30);
@@ -56,7 +56,7 @@ public class GSMainWindow implements ToolWindowFactory {
         cbxChooseCalendar.setBounds(10, 50, 250, 30);
         btnLoadCalendarInfo.setBounds(270, 50, 150, 30);
         listUserStories.setBounds(10, 90, 150, 500);
-        listTasks.setBounds(170,90,150,500);
+        listTasks.setBounds(170, 90, 150, 500);
         txtTaskDetails.setBounds(330, 90, 500, 500);
 
         container.add(btnLogin);
@@ -71,20 +71,13 @@ public class GSMainWindow implements ToolWindowFactory {
         btnLoadCalendarInfo.setEnabled(false);
 
 
-
         btnLogin.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Button login handler");
-                try {
-                    GoogleCalendarConnector.getInstance().connect();
-                    lblLoginStatus.setText("Successfully logged");
-                    populateCalendarComboBox();
-                    btnLogin.setEnabled(false);
-
-                } catch (Exception e1) {
-                    lblLoginStatus.setText("Error while logging");
-                    e1.printStackTrace();
+                if (isUserLogged) {
+                    controller.logout();
+                } else {
+                    controller.login();
                 }
             }
         });
@@ -92,29 +85,10 @@ public class GSMainWindow implements ToolWindowFactory {
         btnLoadCalendarInfo.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-
                 listUserStoriesModel.clear();
-                try {
-
-                    String currentCalendarId = (String) cbxChooseCalendarModel.getSelectedItem();
-                    if (currentCalendarId != null) {
-                        DataProvider dataProvider = new DataProvider();
-                        Collection<UserStory> userStories = dataProvider.getUserStories(currentCalendarId);
-                        for (UserStory userStory : userStories) {
-                            listUserStoriesModel.addElement(userStory);
-                        }
-//
-//                        java.util.List<com.google.api.services.calendar.model.Event> items = GoogleCalendarConnector.getInstance().getEventsForCalendarID(currentCalendarId);
-//                        for (com.google.api.services.calendar.model.Event ev : items) {
-//                            System.out.println(ev);
-//                            if (ev != null && ev.getDescription() != null)
-//                                listUserStoriesModel.addElement(ev.getDescription());
-//                        }
-                    }
-                } catch (IOException e2) {
-                    e2.printStackTrace();
-                }
+                String currentCalendarId = (String) cbxChooseCalendarModel.getSelectedItem();
+                listUserStories.setModel(controller.loadCalendarsInfo(currentCalendarId));
+//                listUserStoriesModel = controller.loadCalendarsInfo(currentCalendarId);
             }
         });
 
@@ -127,7 +101,7 @@ public class GSMainWindow implements ToolWindowFactory {
                 System.out.println("Events list selection changed");
                 UserStory userStory = listUserStories.getSelectedValue();
                 if (userStory != null) {
-                    for(Task task : userStory.getTaskCollection()){
+                    for (Task task : userStory.getTaskCollection()) {
                         listTasksModel.addElement(task);
                     }
                 }
@@ -139,28 +113,45 @@ public class GSMainWindow implements ToolWindowFactory {
             public void valueChanged(ListSelectionEvent e) {
                 txtTaskDetails.setText("");
                 Task task = listTasks.getSelectedValue();
-                if(task != null){
+                if (task != null) {
                     txtTaskDetails.setText(task.getAllInfo());
                 }
             }
         });
     }
 
-    private void populateCalendarComboBox() {
+    public void populateCalendarComboBox(List<CalendarListEntry> calendars) {
+        System.out.println("Populating calendar comboBox");
         cbxChooseCalendarModel.removeAllElements();
-        try {
-            for (CalendarListEntry entry : GoogleCalendarConnector.getInstance().getCalendars().getItems()) {
-                System.out.println("Adding calendar to comboBox: " + entry.getId());
-                cbxChooseCalendarModel.addElement(entry.getId());
-                cbxChooseCalendar.setEnabled(true);
-                btnLoadCalendarInfo.setEnabled(true);
-            }
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            cbxChooseCalendar.setEnabled(false);
-            btnLoadCalendarInfo.setEnabled(false);
+        for (CalendarListEntry entry : calendars) {
+            System.out.println("Adding calendar to comboBox: " + entry.getId());
+            cbxChooseCalendarModel.addElement(entry.getId());
+            cbxChooseCalendar.setEnabled(true);
+            btnLoadCalendarInfo.setEnabled(true);
         }
     }
 
+    public void setLogged(boolean isUserLogged) {
+        this.isUserLogged = isUserLogged;
+        btnLogin.setText(isUserLogged ? "Logout" : "Login");
+        cbxChooseCalendar.setEnabled(isUserLogged);
+        btnLoadCalendarInfo.setEnabled(isUserLogged);
 
+        if (!isUserLogged) {
+            clearAll();
+        }
+    }
+
+    private void clearAll() {
+        System.out.println("Clearing all");
+        listUserStoriesModel.clear();
+        listTasksModel.clear();
+        txtTaskDetails.setText("");
+        cbxChooseCalendarModel.removeAllElements();
+    }
+
+
+    public void setStatus(String status) {
+        lblLoginStatus.setText(status);
+    }
 }

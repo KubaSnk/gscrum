@@ -121,13 +121,13 @@ public class UserStory {
     }
 
     public static void main(String... args){
-        IntStream.iterate(1, e -> e+4).filter(e -> e /2 % 51 ==0).forEach(e -> System.out.println(e));
+//        IntStream.iterate(1, e -> e+4).filter(e -> e /2 % 51 ==0).forEach(e -> System.out.println(e));
 
 
     }
     @Override
     public String toString() {
-        getTaskCollection().stream().filter(e -> e.endDate.equals(e.startDate)).forEach(e -> System.out.println(e));
+//        getTaskCollection().stream().filter(e -> e.endDate.equals(e.startDate)).forEach(e -> System.out.println(e));
         return id;
     }
 

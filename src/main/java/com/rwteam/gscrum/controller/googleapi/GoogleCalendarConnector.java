@@ -12,18 +12,15 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.model.Calendar;
 import com.google.api.services.calendar.model.*;
 import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.TasksScopes;
-import com.google.api.services.tasks.model.TaskList;
-import com.google.api.services.tasks.model.TaskLists;
+import com.google.api.services.tasks.model.Task;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * Created by wrabel on 12/1/2014.
@@ -173,13 +170,19 @@ public class GoogleCalendarConnector {
         display(feed);
     }
 
-    public void showTasks() throws IOException {
-        System.out.println("Show Tasks");
-        TaskLists feed = clientTasks.tasklists().list().execute();
-
-        for(TaskList t : feed.getItems()){
-            System.out.println(t.getTitle());
+    public List<Task> getTasks() {
+        System.out.println("Get tasks");
+        List<Task> tasks = new ArrayList<Task>();
+        try {
+            tasks = clientTasks.tasks().list("@default").execute().getItems();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+//                    clientTasks.tasks().list("@default").setFields("items/title").execute().getItems();
+        return tasks;
+
+
+
     }
 
 
@@ -202,6 +205,13 @@ public class GoogleCalendarConnector {
 
         clientTasks = new Tasks.Builder(httpTransport, JSON_FACTORY, credentialTasks).setApplicationName(APPLICATION_NAME).build();
         showTasks();
+    }
+
+    private void showTasks() {
+        for (Task task : getTasks()) {
+            System.out.println(task);
+        }
+
     }
 
 }

@@ -11,6 +11,7 @@ public class UserStory {
     String id;
     String author;
     String title;
+
     String description;
     String priority;
     String status;

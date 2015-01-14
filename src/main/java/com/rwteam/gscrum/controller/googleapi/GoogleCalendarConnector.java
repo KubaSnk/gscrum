@@ -84,6 +84,8 @@ public class GoogleCalendarConnector {
                 .setDataStoreFactory(tasksDataStoreFactory)
                 .build();
 
+        flow.getClientId();
+
         return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
     }
 
@@ -193,7 +195,7 @@ public class GoogleCalendarConnector {
         return client.events().list(calendarID).execute().getItems();
     }
 
-    public void connect() throws Exception {
+    public String connect() throws Exception {
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
         dataStoreFactory = new FileDataStoreFactory(CALENDAR_DATA_STORE_DIR);
         Credential credential = authorize();
@@ -201,8 +203,20 @@ public class GoogleCalendarConnector {
         Credential credentialTasks = authorizeTasks();
 
         client = new com.google.api.services.calendar.Calendar.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
-
         clientTasks = new Tasks.Builder(httpTransport, JSON_FACTORY, credentialTasks).setApplicationName(APPLICATION_NAME).build();
+
+        return getMainCalendarName();
+    }
+
+    private String getMainCalendarName() throws IOException {
+        List<CalendarListEntry> items = client.calendarList().list().execute().getItems();
+        if (!items.isEmpty()) {
+            CalendarListEntry calendarListEntry = items.get(0);
+            if (calendarListEntry != null) {
+                return calendarListEntry.getId();
+            }
+        }
+        return null;
     }
 
     public void saveTask(Task task) {

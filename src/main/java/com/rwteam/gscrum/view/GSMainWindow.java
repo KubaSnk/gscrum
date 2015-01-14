@@ -16,6 +16,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Date;
 import java.util.List;
 
@@ -46,11 +48,12 @@ public class GSMainWindow implements ToolWindowFactory {
 
     private JTextArea txtTaskDetails;
     private GSMainWindowController controller = new GSMainWindowController(this);
-    private boolean isUserLogged = false;
+    private Container container;
+//    private boolean isUserLogged = false;
 
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
-        final Container container = toolWindow.getComponent().getParent();
+        container = toolWindow.getComponent().getParent();
         container.setLayout(new BorderLayout());
 
         contentPanel = new JPanel();
@@ -113,87 +116,152 @@ public class GSMainWindow implements ToolWindowFactory {
         btnLoadCalendarInfo.setEnabled(false);
 
 
+        initListeners();
+    }
+
+    private void initListeners() {
         btnLogin.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (isUserLogged) {
-                    controller.logout();
-                } else {
-                    controller.login();
-                }
+                loginAction();
             }
         });
 
         btnLoadCalendarInfo.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-//                clearAll();
-                listUserStoriesModel.clear();
-                String currentCalendarId = (String) cbxChooseCalendarModel.getSelectedItem();
-                DefaultListModel<UserStory> defaultListModel = controller.loadCalendarsInfo(currentCalendarId);
-                listUserStories.setModel(defaultListModel);
-                setStatus("Refreshed calendar info at " + new Date());
-                //                listUserStoriesModel = controller.loadCalendarsInfo(currentCalendarId);
+                loadCalendarAction();
             }
         });
 
         btnAddNewTask.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Task task = new Task();
-                task.setDescription("Enter description here....");
-                task.setId("Set id...");
-                taskEditPanel.populateWithTask(task, listUserStories.getModel());
+                addNewTaskAction();
             }
         });
 
         btnSaveTask.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("---- SAVING TASK");
-                Task task = taskEditPanel.retrieveTaskObject();
-                System.out.println(task.getAllInfo());
-
-                GoogleCalendarConnector.getInstance().saveTask(task.convertToGoogleTask());
-
-                com.google.api.services.tasks.model.Task taskGoogle = new com.google.api.services.tasks.model.Task();
-//                taskGoogle.setId("someid");
-                taskGoogle.setTitle("SomeTitle");
-                taskGoogle.setNotes("Some notes");
-                taskGoogle.setDue(new DateTime(System.currentTimeMillis() + 3600000));
-
-
-//                GoogleCalendarConnector.getInstance().saveTask(taskGoogle);
+                saveTaskAction();
             }
         });
 
         listUserStories.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                listTasksModel.clear();
-                txtTaskDetails.setText("");
-
-                System.out.println("Events list selection changed");
-                UserStory userStory = listUserStories.getSelectedValue();
-                if (userStory != null) {
-                    for (Task task : userStory.getTaskCollection()) {
-                        listTasksModel.addElement(task);
-                    }
-                }
+                userStorySelectionChangedAction();
             }
         });
 
         listTasks.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                txtTaskDetails.setText("");
-                Task task = listTasks.getSelectedValue();
-                if (task != null) {
-                    taskEditPanel.populateWithTask(task, listUserStories.getModel());
-                    txtTaskDetails.setText(task.getAllInfo());
-                }
+                taskSelectionChangedAction();
             }
         });
+
+        listTasks.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    taskDoubleClickedAction();
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+    }
+
+    private void taskDoubleClickedAction() {
+        Task selectedTask = getSelectedTask();
+        if (selectedTask != null) {
+            JOptionPane.showMessageDialog(container, selectedTask.getAllInfo(), selectedTask.getId(), JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(container, "Incorrect task!", "Error!", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private Task getSelectedTask() {
+        Task task = listTasks.getSelectedValue();
+        return task;
+    }
+
+    private void taskSelectionChangedAction() {
+        txtTaskDetails.setText("");
+        Task task = listTasks.getSelectedValue();
+        if (task != null) {
+            taskEditPanel.populateWithTask(task, listUserStories.getModel());
+            txtTaskDetails.setText(task.getAllInfo());
+        }
+    }
+
+    private void userStorySelectionChangedAction() {
+        listTasksModel.clear();
+        txtTaskDetails.setText("");
+
+        System.out.println("Events list selection changed");
+        UserStory userStory = listUserStories.getSelectedValue();
+        if (userStory != null) {
+            for (Task task : userStory.getTaskCollection()) {
+                listTasksModel.addElement(task);
+            }
+        }
+    }
+
+    private void saveTaskAction() {
+        System.out.println("---- SAVING TASK");
+        Task task = taskEditPanel.retrieveTaskObject();
+        System.out.println(task.getAllInfo());
+
+        GoogleCalendarConnector.getInstance().saveTask(task.convertToGoogleTask());
+
+        com.google.api.services.tasks.model.Task taskGoogle = new com.google.api.services.tasks.model.Task();
+//                taskGoogle.setId("someid");
+        taskGoogle.setTitle("SomeTitle");
+        taskGoogle.setNotes("Some notes");
+        taskGoogle.setDue(new DateTime(System.currentTimeMillis() + 3600000));
+
+
+//                GoogleCalendarConnector.getInstance().saveTask(taskGoogle);
+    }
+
+    private void addNewTaskAction() {
+        Task task = new Task();
+        task.setDescription("Enter description here....");
+        task.setId("Set id...");
+        taskEditPanel.populateWithTask(task, listUserStories.getModel());
+    }
+
+    private void loadCalendarAction() {
+        listUserStoriesModel.clear();
+        String currentCalendarId = (String) cbxChooseCalendarModel.getSelectedItem();
+        DefaultListModel<UserStory> defaultListModel = controller.loadCalendarsInfo(currentCalendarId);
+        listUserStories.setModel(defaultListModel);
+        setStatus("Refreshed calendar info at " + new Date());
+    }
+
+    private void loginAction() {
+        controller.loginOrLogout();
     }
 
     public void populateCalendarComboBox(List<CalendarListEntry> calendars) {
@@ -208,7 +276,6 @@ public class GSMainWindow implements ToolWindowFactory {
     }
 
     public void setLogged(boolean isUserLogged) {
-        this.isUserLogged = isUserLogged;
         btnLogin.setText(isUserLogged ? "Logout" : "Login");
         cbxChooseCalendar.setEnabled(isUserLogged);
         btnLoadCalendarInfo.setEnabled(isUserLogged);

@@ -15,6 +15,7 @@ import java.util.Collection;
  */
 public class GSMainWindowController {
     private GSMainWindow view;
+    private boolean userLogged;
 
     public GSMainWindowController(GSMainWindow gsMainWindow) {
         this.view = gsMainWindow;
@@ -24,19 +25,19 @@ public class GSMainWindowController {
 
         System.out.println("Button login handler");
         try {
-            GoogleCalendarConnector.getInstance().connect();
-            view.setStatus("Successfully logged");
+            String userName = GoogleCalendarConnector.getInstance().connect();
+            view.setStatus("Successfully logged as " + userName);
             view.populateCalendarComboBox(GoogleCalendarConnector.getInstance().getCalendars().getItems());
-            view.setLogged(true);
+            setUserLogged(true);
         } catch (Exception e1) {
             view.setStatus("Error while logging");
             e1.printStackTrace();
-            view.setLogged(false);
+            logout();
         }
     }
 
     public void logout() {
-        view.setLogged(false);
+        setUserLogged(false);
     }
 
     public DefaultListModel<UserStory> loadCalendarsInfo(String currentCalendarId) {
@@ -50,7 +51,7 @@ public class GSMainWindowController {
                 }
                 System.out.println("------------- PRINTING TASKS");
                 Collection<Task> tasks = dataProvider.getTasks();
-                for (Task task : tasks){
+                for (Task task : tasks) {
                     System.out.println(task.getAllInfo());
                 }
 //
@@ -69,4 +70,21 @@ public class GSMainWindowController {
     }
 
 
+    public void loginOrLogout() {
+        if (isUserLogged()) {
+            logout();
+        } else {
+            login();
+        }
+
+    }
+
+    public boolean isUserLogged() {
+        return userLogged;
+    }
+
+    public void setUserLogged(boolean userLogged) {
+        this.userLogged = userLogged;
+        view.setLogged(userLogged);
+    }
 }

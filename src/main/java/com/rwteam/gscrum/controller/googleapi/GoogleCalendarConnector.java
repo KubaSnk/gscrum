@@ -182,7 +182,6 @@ public class GoogleCalendarConnector {
         return tasks;
 
 
-
     }
 
 
@@ -204,14 +203,20 @@ public class GoogleCalendarConnector {
         client = new com.google.api.services.calendar.Calendar.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
 
         clientTasks = new Tasks.Builder(httpTransport, JSON_FACTORY, credentialTasks).setApplicationName(APPLICATION_NAME).build();
-        showTasks();
     }
 
-    private void showTasks() {
-        for (Task task : getTasks()) {
-            System.out.println(task);
+    public void saveTask(Task task) {
+        try {
+
+            System.out.println("Pushing task");
+            System.out.println(task.toPrettyString());
+//            clientTasks.tasklists().insert(new TaskList());
+//            clientTasks.tasks().li
+            Task result = clientTasks.tasks().insert("@default", task).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
     }
+
 
 }

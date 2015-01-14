@@ -2,6 +2,7 @@ package com.rwteam.gscrum.controller;
 
 import com.rwteam.gscrum.controller.googleapi.DataProvider;
 import com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector;
+import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
 import com.rwteam.gscrum.view.GSMainWindow;
 
@@ -37,7 +38,8 @@ public class GSMainWindowController {
     public void logout() {
         view.setLogged(false);
     }
-    public DefaultListModel loadCalendarsInfo(String currentCalendarId) {
+
+    public DefaultListModel<UserStory> loadCalendarsInfo(String currentCalendarId) {
         DefaultListModel defaultListModel = new DefaultListModel();
         try {
             if (currentCalendarId != null) {
@@ -45,6 +47,11 @@ public class GSMainWindowController {
                 Collection<UserStory> userStories = dataProvider.getUserStories(currentCalendarId);
                 for (UserStory userStory : userStories) {
                     defaultListModel.addElement(userStory);
+                }
+                System.out.println("------------- PRINTING TASKS");
+                Collection<Task> tasks = dataProvider.getTasks();
+                for (Task task : tasks){
+                    System.out.println(task.getAllInfo());
                 }
 //
 //                        java.util.List<com.google.api.services.calendar.model.Event> items = GoogleCalendarConnector.getInstance().getEventsForCalendarID(currentCalendarId);

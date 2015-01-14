@@ -17,7 +17,7 @@ public class Task {
     Date endDate;
     Double estimatedHours;
     Double spentHours;
-    String userStoryID;
+    UserStory userStory;
 
     public String getId() {
         return id;
@@ -107,12 +107,12 @@ public class Task {
         this.spentHours = spentHours;
     }
 
-    public String getUserStoryID() {
-        return userStoryID;
+    public UserStory getUserStory() {
+        return userStory;
     }
 
-    public void setUserStoryID(String userStoryID) {
-        this.userStoryID = userStoryID;
+    public void setUserStory(UserStory userStoryID) {
+        this.userStory = userStoryID;
     }
 
     @Override
@@ -134,8 +134,39 @@ public class Task {
                 "\nendDate=" + endDate +
                 "\nestimatedHours=" + estimatedHours +
                 "\nspentHours=" + spentHours +
-                "\nuserStoryID='" + userStoryID + '\'' +
+                "\nuserStory='" + userStory + '\'' +
                 "\n}";
 
+    }
+
+    public com.google.api.services.tasks.model.Task convertToGoogleTask() {
+        com.google.api.services.tasks.model.Task googleTask = new com.google.api.services.tasks.model.Task();
+        googleTask.setNotes(getDescription());
+        googleTask.setTitle("[" + getUserStory() + "] - [" + getId() + "] " + getDescription());
+
+        StringBuilder sbNotes = new StringBuilder();
+        sbNotes.append("<task>\n");
+        if (getId() != null) {
+            sbNotes.append("<id>" + getId() + "</id>");
+        }
+        if (getDescription() != null) {
+            sbNotes.append("<description>" + getDescription() + "</description>");
+        }
+        if (getAssignedPerson() != null) {
+            sbNotes.append("<assigned_person>" + getAssignedPerson() + "</assigned_person>");
+        }
+        if (getPriority() != null) {
+            sbNotes.append("<priority>" + getPriority() + "</priority>");
+        }
+        if (getEstimatedHours() != null) {
+            sbNotes.append("<estimated_hours>" + getEstimatedHours() + "</estimated_hours>");
+        }
+
+        sbNotes.append("</task>");
+
+        googleTask.setNotes(sbNotes.toString());
+
+
+        return googleTask;
     }
 }

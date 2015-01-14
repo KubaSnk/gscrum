@@ -1,6 +1,8 @@
 package com.rwteam.gscrum.controller.parsers;
 
 import com.google.api.services.calendar.model.Event;
+import com.rwteam.gscrum.controller.googleapi.DataProvider;
+import com.rwteam.gscrum.controller.utils.ParsersUtils;
 import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
 
@@ -11,7 +13,9 @@ import java.util.List;
  * Created by kubasnk on 12/17/14.
  */
 public class UserStoryParser {
-    public static UserStory parseUserStory(Event event) {
+    private static final String INCORRECT_TASK_INFO = "-- Invalid --";
+
+    public static UserStory parseUserStory(Event event, DataProvider dataProvider) {
         System.out.println("Parsing userStory: " + event);
         if (event == null)
             return null;
@@ -23,25 +27,27 @@ public class UserStoryParser {
         UserStory userStory = new UserStory();
 
 
-        userStory.setId(cutoutValueFromTag(value, "id"));
+        userStory.setId(ParsersUtils.cutoutValueFromTag(value, "id"));
 
 
-//        Date startDate = new Date(Date.parse(cutoutValueFromTag(value, "start_date")));
+//        Date startDate = new Date(Date.parse(ParsersUtils.cutoutValueFromTag(value, "start_date")));
 //        userStory.setStartDate(startDate);
 
 
         List<Task> taskList = new ArrayList<>();
-        String tasksString = cutoutValueFromTag(value, "tasks");
+        String tasksString = ParsersUtils.cutoutValueFromTag(value, "tasks");
         String[] tasks = value.split("<task>");
         for (int i = 1; i < tasks.length; i++) {
             String currentTask = tasks[i].split("</task>")[0];
-            Task task = new Task();
-            task.setId(cutoutValueFromTag(currentTask, "id"));
-            task.setDescription(cutoutValueFromTag(currentTask, "description"));
-            task.setAssignedPerson(cutoutValueFromTag(currentTask, "assigned_person"));
-            task.setPriority(cutoutValueFromTag(currentTask, "priority"));
-            String estimatedHours = cutoutValueFromTag(currentTask, "estimated_hours").replace("h", "");
-            task.setEstimatedHours(Double.parseDouble(estimatedHours));
+            String taskId = ParsersUtils.cutoutValueFromTag(currentTask, "id");
+            Task task = dataProvider.getTask(taskId);
+
+            if (task == null) {
+                task = new Task();
+                task.setDescription(currentTask);
+                task.setId(INCORRECT_TASK_INFO);
+            }
+            task.setUserStory(userStory);
             taskList.add(task);
 
 
@@ -50,14 +56,4 @@ public class UserStoryParser {
         return userStory;
     }
 
-    private static String cutoutValueFromTag(String value, String tag) {
-        String result = "";
-
-        value = value.trim();
-        String[] split = value.split("<" + tag + ">");
-        if (split.length > 1) {
-            result = split[1].trim().split("</" + tag + ">")[0].trim();
-        }
-        return result;
-    }
 }

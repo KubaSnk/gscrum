@@ -1,6 +1,5 @@
 package com.rwteam.gscrum.view;
 
-import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.CalendarListEntry;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -49,7 +48,6 @@ public class GSMainWindow implements ToolWindowFactory {
     private JTextArea txtTaskDetails;
     private GSMainWindowController controller = new GSMainWindowController(this);
     private Container container;
-//    private boolean isUserLogged = false;
 
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
@@ -234,15 +232,6 @@ public class GSMainWindow implements ToolWindowFactory {
         System.out.println(task.getAllInfo());
 
         GoogleCalendarConnector.getInstance().saveTask(task.convertToGoogleTask());
-
-        com.google.api.services.tasks.model.Task taskGoogle = new com.google.api.services.tasks.model.Task();
-//                taskGoogle.setId("someid");
-        taskGoogle.setTitle("SomeTitle");
-        taskGoogle.setNotes("Some notes");
-        taskGoogle.setDue(new DateTime(System.currentTimeMillis() + 3600000));
-
-
-//                GoogleCalendarConnector.getInstance().saveTask(taskGoogle);
     }
 
     private void addNewTaskAction() {

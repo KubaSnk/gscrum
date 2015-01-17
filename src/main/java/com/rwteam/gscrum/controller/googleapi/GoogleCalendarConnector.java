@@ -17,7 +17,9 @@ import com.google.api.services.calendar.model.*;
 import com.google.api.services.tasks.Tasks;
 import com.google.api.services.tasks.TasksScopes;
 import com.google.api.services.tasks.model.Task;
+import com.rwteam.gscrum.utils.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -26,43 +28,35 @@ import java.util.*;
  * Created by wrabel on 12/1/2014.
  */
 public class GoogleCalendarConnector {
-
     private static final String APPLICATION_NAME = "gscrumplugin";
     private static final java.io.File CALENDAR_DATA_STORE_DIR = new java.io.File("D:/userdata/wrabel/.store/calendar_sample");
     private static final java.io.File TASKS_DATA_STORE_DIR = new java.io.File("D:/userdata/wrabel/.store/tasks_sample");
+    private static final String KEYSTORE_DIR_PATH = "D:/userdata/wrabel/.store/";
+    private static final String CALENDAR_KEYSTORE_SUBDIR_PATH = "calendar_store";
+    private static final String TASKS_KEYSTORE_SUBDIR_PATH = "tasks_store";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     public static GoogleCalendarConnector INSTANCE = new GoogleCalendarConnector();
-    private static FileDataStoreFactory dataStoreFactory;
-    private static FileDataStoreFactory tasksDataStoreFactory;
     private static HttpTransport httpTransport;
-    private static com.google.api.services.calendar.Calendar client;
-    Tasks clientTasks;
+    private static FileDataStoreFactory calendarDataStoreFactory;
+    private static FileDataStoreFactory tasksDataStoreFactory;
+    private static com.google.api.services.calendar.Calendar calendarClient;
+    private static Tasks tasksClient;
+    private final Logger logger = new Logger(this.getClass());
 
     private GoogleCalendarConnector() {
-
     }
 
     public static GoogleCalendarConnector getInstance() {
         return INSTANCE;
     }
 
-    /**
-     * Authorizes the installed application to access user's protected data.
-     */
     private static Credential authorize() throws Exception {
 
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(GoogleCalendarConnector.class.getResourceAsStream("/client_secrets.json")));
 
-//        if (clientSecrets.getDetails().getClientId().startsWith("Enter") || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-//            System.out.println("Enter Client ID and Secret from https://code.google.com/apis/console/?api=calendar "
-//                    + "into calendar-cmdline-sample/src/main/resources/client_secrets.json");
-//            System.exit(1);
-//        }
-        // set up authorization code flow
-
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY, clientSecrets, Collections.singleton(CalendarScopes.CALENDAR))
-                .setDataStoreFactory(dataStoreFactory)
+                .setDataStoreFactory(calendarDataStoreFactory)
                 .build();
 
         return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
@@ -71,14 +65,6 @@ public class GoogleCalendarConnector {
     private static Credential authorizeTasks() throws Exception {
 
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(GoogleCalendarConnector.class.getResourceAsStream("/client_secrets.json")));
-
-//        if (clientSecrets.getDetails().getClientId().startsWith("Enter") || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-//            System.out.println("Enter Client ID and Secret from https://code.google.com/apis/console/?api=calendar "
-//                    + "into calendar-cmdline-sample/src/main/resources/client_secrets.json");
-//            System.exit(1);
-//        }
-        // set up authorization code flow
-
 
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(httpTransport, JSON_FACTORY, clientSecrets, Collections.singleton(TasksScopes.TASKS))
                 .setDataStoreFactory(tasksDataStoreFactory)
@@ -89,18 +75,9 @@ public class GoogleCalendarConnector {
         return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
     }
 
-    public static void main(String[] args) {
-        try {
-            GoogleCalendarConnector.getInstance().connect();
-            GoogleCalendarConnector.getInstance().showCalendars();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private static void addEvent(Calendar calendar) throws IOException {
         Event event = newEvent();
-        Event result = client.events().insert(calendar.getId(), event).execute();
+        Event result = calendarClient.events().insert(calendar.getId(), event).execute();
     }
 
     private static Event newEvent() {
@@ -115,101 +92,51 @@ public class GoogleCalendarConnector {
         return event;
     }
 
-
-    static void display(CalendarList feed) throws IOException {
-        if (feed.getItems() != null) {
-            for (CalendarListEntry entry : feed.getItems()) {
-
-                System.out.println();
-                System.out.println("-----------------------------------------------");
-                display(entry);
-                List<Event> items = client.events().list(entry.getId()).execute().getItems();
-                for (Event ev : items) {
-                    System.out.println(ev);
-                }
-//                items.stream().forEach(e-> System.out.println(e.toString()));
-            }
-        }
+    public static String[] getProfiles() {
+        File file = new File(KEYSTORE_DIR_PATH);
+        return file.list();
     }
 
-    static void display(CalendarListEntry entry) {
-        System.out.println("ID: " + entry.getId());
-        System.out.println("Summary: " + entry.getSummary());
-        if (entry.getDescription() != null) {
-            System.out.println("Description: " + entry.getDescription());
-        }
-    }
-
-    private static void showEvents(Calendar calendar) throws IOException {
-        System.out.println("Show Events");
-        Events feed = client.events().list(calendar.getId()).execute();
-        display(feed);
-    }
-
-    static void display(Event event) {
-        if (event.getStart() != null) {
-            System.out.println("Start Time: " + event.getStart());
-        }
-        if (event.getEnd() != null) {
-            System.out.println("End Time: " + event.getEnd());
-        }
-    }
-
-    static void display(Events feed) {
-        if (feed.getItems() != null) {
-            for (Event entry : feed.getItems()) {
-                System.out.println();
-                System.out.println("-----------------------------------------------");
-                display(entry);
-            }
-        }
-    }
-
-    public void showCalendars() throws IOException {
-        System.out.println("Show Calendars");
-        CalendarList feed = client.calendarList().list().execute();
-
-        display(feed);
+    public static void addNewProfile(String profileName) {
+        File newProfileDir = new File(KEYSTORE_DIR_PATH + profileName);
+        newProfileDir.mkdir();
     }
 
     public List<Task> getTasks() {
         System.out.println("Get tasks");
         List<Task> tasks = new ArrayList<Task>();
         try {
-            tasks = clientTasks.tasks().list("@default").execute().getItems();
+            tasks = tasksClient.tasks().list("@default").execute().getItems();
         } catch (IOException e) {
             e.printStackTrace();
         }
-//                    clientTasks.tasks().list("@default").setFields("items/title").execute().getItems();
         return tasks;
-
-
     }
 
-
     public CalendarList getCalendars() throws IOException {
-        return client.calendarList().list().execute();
+        return calendarClient.calendarList().list().execute();
     }
 
     public List<Event> getEventsForCalendarID(String calendarID) throws IOException {
-        return client.events().list(calendarID).execute().getItems();
+        return calendarClient.events().list(calendarID).execute().getItems();
     }
 
-    public String connect() throws Exception {
+    public String connect(String profileName) throws Exception {
+        logger.log("Connecting... ");
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        dataStoreFactory = new FileDataStoreFactory(CALENDAR_DATA_STORE_DIR);
+        calendarDataStoreFactory = new FileDataStoreFactory(new File(KEYSTORE_DIR_PATH + profileName + "/" + CALENDAR_KEYSTORE_SUBDIR_PATH));
         Credential credential = authorize();
-        tasksDataStoreFactory = new FileDataStoreFactory(TASKS_DATA_STORE_DIR);
+        tasksDataStoreFactory = new FileDataStoreFactory(new File(KEYSTORE_DIR_PATH + profileName + "/" + TASKS_KEYSTORE_SUBDIR_PATH));
         Credential credentialTasks = authorizeTasks();
 
-        client = new com.google.api.services.calendar.Calendar.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
-        clientTasks = new Tasks.Builder(httpTransport, JSON_FACTORY, credentialTasks).setApplicationName(APPLICATION_NAME).build();
+        calendarClient = new com.google.api.services.calendar.Calendar.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
+        tasksClient = new Tasks.Builder(httpTransport, JSON_FACTORY, credentialTasks).setApplicationName(APPLICATION_NAME).build();
 
         return getMainCalendarName();
     }
 
     private String getMainCalendarName() throws IOException {
-        List<CalendarListEntry> items = client.calendarList().list().execute().getItems();
+        List<CalendarListEntry> items = calendarClient.calendarList().list().execute().getItems();
         if (!items.isEmpty()) {
             CalendarListEntry calendarListEntry = items.get(0);
             if (calendarListEntry != null) {
@@ -220,17 +147,13 @@ public class GoogleCalendarConnector {
     }
 
     public void saveTask(Task task) {
-        try {
-
-            System.out.println("Pushing task");
-            System.out.println(task.toPrettyString());
-//            clientTasks.tasklists().insert(new TaskList());
-//            clientTasks.tasks().li
-            Task result = clientTasks.tasks().insert("@default", task).execute();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (task != null) {
+            try {
+                Task result = tasksClient.tasks().insert("@default", task).execute();
+                logger.log("Saved task " + result.getId());
+            } catch (IOException e) {
+                logger.logError(e);
+            }
         }
     }
-
-
 }

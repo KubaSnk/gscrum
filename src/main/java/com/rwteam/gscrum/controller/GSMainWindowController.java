@@ -1,9 +1,11 @@
 package com.rwteam.gscrum.controller;
 
+import com.google.common.base.CharMatcher;
 import com.rwteam.gscrum.controller.googleapi.DataProvider;
 import com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector;
 import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
+import com.rwteam.gscrum.utils.Logger;
 import com.rwteam.gscrum.view.GSMainWindow;
 
 import javax.swing.*;
@@ -14,6 +16,8 @@ import java.util.Collection;
  * Created by wrabel on 1/10/2015.
  */
 public class GSMainWindowController {
+    private final Logger logger = new Logger(this.getClass());
+
     private GSMainWindow view;
     private boolean userLogged;
 
@@ -21,11 +25,16 @@ public class GSMainWindowController {
         this.view = gsMainWindow;
     }
 
-    public void login() {
+    public void login(String profileName) {
+        if (!checkProfileName(profileName)) {
+            view.displayErrorDialog("Incorrect profile name!");
+            return;
+        }
 
         System.out.println("Button login handler");
         try {
-            String userName = GoogleCalendarConnector.getInstance().connect();
+            GoogleCalendarConnector.getProfiles();
+            String userName = GoogleCalendarConnector.getInstance().connect(profileName);
             view.setStatus("Successfully logged as " + userName);
             view.populateCalendarComboBox(GoogleCalendarConnector.getInstance().getCalendars().getItems());
             setUserLogged(true);
@@ -70,11 +79,11 @@ public class GSMainWindowController {
     }
 
 
-    public void loginOrLogout() {
+    public void loginOrLogout(String profileName) {
         if (isUserLogged()) {
             logout();
         } else {
-            login();
+            login(profileName);
         }
 
     }
@@ -86,5 +95,23 @@ public class GSMainWindowController {
     public void setUserLogged(boolean userLogged) {
         this.userLogged = userLogged;
         view.setLogged(userLogged);
+    }
+
+    public void init() {
+        logger.log("Initializing Controller");
+        view.populateProfilesComboBox(GoogleCalendarConnector.getProfiles());
+    }
+
+    public void addNewProfile(String profileName) {
+        if (checkProfileName(profileName)) {
+            GoogleCalendarConnector.addNewProfile(profileName);
+            view.populateProfilesComboBox(GoogleCalendarConnector.getProfiles());
+        } else {
+            view.displayErrorDialog("Profile name must contains only letters and numbers!");
+        }
+    }
+
+    private boolean checkProfileName(String profileName) {
+        return !profileName.isEmpty() && CharMatcher.JAVA_LETTER_OR_DIGIT.matchesAllOf(profileName);
     }
 }

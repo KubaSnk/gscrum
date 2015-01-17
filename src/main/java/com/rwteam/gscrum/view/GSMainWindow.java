@@ -24,11 +24,14 @@ import java.util.List;
  * Created by wrabel on 11/30/2014.
  */
 public class GSMainWindow implements ToolWindowFactory {
+    private JLabel lblChooseProfile;
+    private JLabel lblChooseCalendar;
+    private JComboBox<String> cbxChooseProfile;
     private JPanel contentPanel;
     private JButton btnLogin;
     private JButton btnAddNewTask;
     private JButton btnSaveTask;
-    private JLabel lblLoginStatus;
+    private JButton btnAddNewProfile;
     private JButton btnLoadCalendarInfo;
     private DefaultComboBoxModel<String> cbxChooseCalendarModel;
     private JComboBox<String> cbxChooseCalendar;
@@ -54,12 +57,15 @@ public class GSMainWindow implements ToolWindowFactory {
         container = toolWindow.getComponent().getParent();
         container.setLayout(new BorderLayout());
 
+        lblChooseProfile = new JLabel("Choose profile");
+        cbxChooseProfile = new JComboBox<String>();
         contentPanel = new JPanel();
         btnLogin = new JButton("Login");
         btnAddNewTask = new JButton("New task");
         btnSaveTask = new JButton("Save task");
-        lblLoginStatus = new JLabel("You are not logged");
-        btnLoadCalendarInfo = new JButton("Refresh calendar info");
+        btnAddNewProfile = new JButton("Add new");
+        btnLoadCalendarInfo = new JButton("Load calendar");
+        lblChooseCalendar = new JLabel("Calendar");
         cbxChooseCalendarModel = new DefaultComboBoxModel<String>();
         cbxChooseCalendar = new JComboBox<String>(cbxChooseCalendarModel);
         listUserStoriesModel = new DefaultListModel();
@@ -74,10 +80,13 @@ public class GSMainWindow implements ToolWindowFactory {
         statusPanel = new JPanel();
         statusLabel = new JLabel("status");
 
-        btnLogin.setBounds(10, 10, 150, 30);
-        lblLoginStatus.setBounds(180, 10, 200, 30);
-        cbxChooseCalendar.setBounds(10, 50, 250, 30);
-        btnLoadCalendarInfo.setBounds(270, 50, 150, 30);
+        lblChooseProfile.setBounds(10, 5, 100, 25);
+        cbxChooseProfile.setBounds(100, 5, 150, 25);
+        btnLogin.setBounds(255, 5, 70, 25);
+        btnAddNewProfile.setBounds(330, 5, 80, 25);
+        lblChooseCalendar.setBounds(10, 40, 100, 25);
+        cbxChooseCalendar.setBounds(100, 40, 200, 25);
+        btnLoadCalendarInfo.setBounds(300, 40, 100, 25);
         scrollPaneListUserStories.setBounds(10, 90, 150, 200);
         scrollPaneListTasks.setBounds(170, 90, 150, 200);
         txtTaskDetails.setBounds(330, 90, 500, 200);
@@ -95,9 +104,12 @@ public class GSMainWindow implements ToolWindowFactory {
 
 
         container.add(contentPanel, BorderLayout.CENTER);
+        contentPanel.add(lblChooseProfile);
+        contentPanel.add(cbxChooseProfile);
         contentPanel.add(btnLogin);
-        contentPanel.add(lblLoginStatus);
+        contentPanel.add(btnAddNewProfile);
         contentPanel.add(btnLoadCalendarInfo);
+        contentPanel.add(lblChooseCalendar);
         contentPanel.add(cbxChooseCalendar);
         contentPanel.add(scrollPaneListUserStories);
         contentPanel.add(scrollPaneListTasks);
@@ -115,13 +127,27 @@ public class GSMainWindow implements ToolWindowFactory {
 
 
         initListeners();
+        setLogged(false);
+        controller.init();
     }
 
     private void initListeners() {
+        btnAddNewProfile.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addNewProfileAction();
+            }
+        });
+
         btnLogin.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                loginAction();
+                Thread queryThread = new Thread() {
+                    public void run() {
+                        loginAction((String) cbxChooseProfile.getSelectedItem());
+                    }
+                };
+                queryThread.start();
             }
         });
 
@@ -190,12 +216,17 @@ public class GSMainWindow implements ToolWindowFactory {
         });
     }
 
+    private void addNewProfileAction() {
+        String profileName = JOptionPane.showInputDialog(container, "Enter profile name?", "Create new GScrum profile", JOptionPane.QUESTION_MESSAGE);
+        controller.addNewProfile(profileName);
+    }
+
     private void taskDoubleClickedAction() {
         Task selectedTask = getSelectedTask();
         if (selectedTask != null) {
             JOptionPane.showMessageDialog(container, selectedTask.getAllInfo(), selectedTask.getId(), JOptionPane.INFORMATION_MESSAGE);
         } else {
-            JOptionPane.showMessageDialog(container, "Incorrect task!", "Error!", JOptionPane.ERROR_MESSAGE);
+            displayErrorDialog("Incorrect task!");
         }
     }
 
@@ -249,29 +280,52 @@ public class GSMainWindow implements ToolWindowFactory {
         setStatus("Refreshed calendar info at " + new Date());
     }
 
-    private void loginAction() {
-        controller.loginOrLogout();
+    private void loginAction(String profileName) {
+        controller.loginOrLogout(profileName);
     }
 
     public void populateCalendarComboBox(List<CalendarListEntry> calendars) {
-        System.out.println("Populating calendar comboBox");
-        cbxChooseCalendarModel.removeAllElements();
-        for (CalendarListEntry entry : calendars) {
-            System.out.println("Adding calendar to comboBox: " + entry.getId());
-            cbxChooseCalendarModel.addElement(entry.getId());
-            cbxChooseCalendar.setEnabled(true);
-            btnLoadCalendarInfo.setEnabled(true);
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                System.out.println("Populating calendar comboBox");
+                cbxChooseCalendarModel.removeAllElements();
+                for (CalendarListEntry entry : calendars) {
+                    System.out.println("Adding calendar to comboBox: " + entry.getId());
+                    cbxChooseCalendarModel.addElement(entry.getId());
+                    cbxChooseCalendar.setEnabled(true);
+                    btnLoadCalendarInfo.setEnabled(true);
+                }
+            }
+        });
+
     }
 
     public void setLogged(boolean isUserLogged) {
-        btnLogin.setText(isUserLogged ? "Logout" : "Login");
-        cbxChooseCalendar.setEnabled(isUserLogged);
-        btnLoadCalendarInfo.setEnabled(isUserLogged);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                btnLogin.setText(isUserLogged ? "Logout" : "Login");
+                cbxChooseCalendar.setEnabled(isUserLogged);
+                btnLoadCalendarInfo.setEnabled(isUserLogged);
+                cbxChooseProfile.setEnabled(!isUserLogged);
+                btnAddNewProfile.setVisible(!isUserLogged);
 
-        if (!isUserLogged) {
-            clearAll();
-        }
+                lblChooseCalendar.setVisible(isUserLogged);
+                cbxChooseCalendar.setVisible(isUserLogged);
+                btnLoadCalendarInfo.setVisible(isUserLogged);
+                scrollPaneListTasks.setVisible(isUserLogged);
+                scrollPaneListUserStories.setVisible(isUserLogged);
+                txtTaskDetails.setVisible(isUserLogged);
+                taskEditPanel.setVisible(isUserLogged);
+                btnAddNewTask.setVisible(isUserLogged);
+                btnSaveTask.setVisible(isUserLogged);
+
+
+                if (!isUserLogged) {
+                    clearAll();
+                }
+            }
+        });
+
     }
 
     private void clearAll() {
@@ -285,6 +339,18 @@ public class GSMainWindow implements ToolWindowFactory {
 
 
     public void setStatus(String status) {
-        statusLabel.setText(status);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                statusLabel.setText(status);
+            }
+        });
+    }
+
+    public void populateProfilesComboBox(String[] profiles) {
+        cbxChooseProfile.setModel(new DefaultComboBoxModel<>(profiles));
+    }
+
+    public void displayErrorDialog(String errorText) {
+        JOptionPane.showMessageDialog(container, errorText, "Error!", JOptionPane.ERROR_MESSAGE);
     }
 }

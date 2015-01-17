@@ -18,17 +18,6 @@ import static com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector.get
  */
 public class DataProvider {
     List<Task> tasksCache = null;
-    public static void main(String... args) {
-        try {
-            GoogleCalendarConnector.getInstance().connect();
-            DataProvider dataProvider = new DataProvider();
-            for (UserStory userStory : dataProvider.getUserStories("gscrumteam@gmail.com")) {
-                System.out.println(userStory);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public Collection<UserStory> getUserStories(String calendarID) throws IOException {
         refreshTasksInfo();

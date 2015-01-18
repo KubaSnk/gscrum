@@ -284,7 +284,7 @@ public class GSMainWindow implements ToolWindowFactory {
         controller.loginOrLogout(profileName);
     }
 
-    public void populateCalendarComboBox(List<CalendarListEntry> calendars) {
+    public void populateCalendarComboBox(final List<CalendarListEntry> calendars) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 System.out.println("Populating calendar comboBox");
@@ -300,7 +300,7 @@ public class GSMainWindow implements ToolWindowFactory {
 
     }
 
-    public void setLogged(boolean isUserLogged) {
+    public void setLogged(final boolean isUserLogged) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 btnLogin.setText(isUserLogged ? "Logout" : "Login");
@@ -338,7 +338,7 @@ public class GSMainWindow implements ToolWindowFactory {
     }
 
 
-    public void setStatus(String status) {
+    public void setStatus(final String status) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 statusLabel.setText(status);

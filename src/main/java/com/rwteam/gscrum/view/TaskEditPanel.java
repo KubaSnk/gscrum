@@ -119,9 +119,8 @@ public class TaskEditPanel extends JPanel {
 
         initChangeListeners();
 
+        this.setEditable(false);
         this.setPreferredSize(new Dimension(300, 300));
-        this.setBackground(Color.RED);
-
     }
 
     public static void main(String... args) {
@@ -314,5 +313,17 @@ public class TaskEditPanel extends JPanel {
         }
 
         return task;
+    }
+
+    public void setEditable(boolean editable) {
+        txtAreaDescription.setEditable(editable);
+        txtId.setEditable(editable);
+        txtAssignedPerson.setEditable(editable);
+        txtAuthor.setEditable(editable);
+        txtEstimatedHours.setEditable(editable);
+        txtPriority.setEditable(editable);
+        txtSpentHours.setEditable(editable);
+        txtStatus.setEditable(editable);
+        cbxUserStory.setEditable(editable);
     }
 }

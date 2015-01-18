@@ -94,7 +94,7 @@ public class GSMainWindow implements ToolWindowFactory {
         txtTaskDetails.setBounds(330, 90, 500, 200);
         btnAddNewTask.setBounds(10, 295, 100, 30);
         btnSaveTask.setBounds(120, 295, 100, 30);
-        btnEditTask.setBounds(220, 295,100,30);
+        btnEditTask.setBounds(220, 295, 100, 30);
         taskEditPanel.setBounds(10, 330, 600, 500);
 
         contentPanel.setLayout(null);
@@ -176,6 +176,13 @@ public class GSMainWindow implements ToolWindowFactory {
             }
         });
 
+        btnEditTask.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editTaskAction();
+            }
+        });
+
         listUserStories.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -220,6 +227,10 @@ public class GSMainWindow implements ToolWindowFactory {
         });
     }
 
+    private void editTaskAction() {
+        taskEditPanel.setEditable(true);
+    }
+
     private void addNewProfileAction() {
         String profileName = JOptionPane.showInputDialog(container, "Enter profile name?", "Create new GScrum profile", JOptionPane.QUESTION_MESSAGE);
         controller.addNewProfile(profileName);
@@ -244,6 +255,7 @@ public class GSMainWindow implements ToolWindowFactory {
         Task task = listTasks.getSelectedValue();
         if (task != null) {
             taskEditPanel.populateWithTask(task, listUserStories.getModel(), true);
+            taskEditPanel.setEditable(false);
             txtTaskDetails.setText(task.getAllInfo());
         }
     }

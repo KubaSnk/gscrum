@@ -11,18 +11,7 @@ import java.awt.*;
  */
 public class TaskEditPanel extends JPanel {
     private final GSMainWindow gsMainWindow;
-//    JScrollPane scrollPane;
-//    JPanel contentPanel;
-//
-//    JButton button;
-
-    JLabel lblId;
-    JLabel lblPriority;
-    JLabel lblAssignedPerson;
-    JLabel lblUserStory;
-    JLabel lblEstimatedHours;
-    JLabel lblDescription;
-
+    private final JLabel lblHours;
 
     JTextField txtId;
     JTextField txtPriority;
@@ -30,6 +19,19 @@ public class TaskEditPanel extends JPanel {
     JComboBox<UserStoryHolder> cbxUserStory;
     JTextField txtEstimatedHours;
     JTextArea txtAreaDescription;
+    JTextField txtAuthor;
+    JTextField txtSpentHours;
+    JTextField txtStatus;
+
+    private JLabel lblId;
+    private JLabel lblPriority;
+    private JLabel lblAssignedPerson;
+    private JLabel lblUserStory;
+    private JLabel lblEstimatedHours;
+    private JLabel lblDescription;
+    private JLabel lblAuthor;
+    private JLabel lblSpentHours;
+    private JLabel lblStatus;
 
 
     public TaskEditPanel(GSMainWindow gsMainWindow) {
@@ -40,8 +42,12 @@ public class TaskEditPanel extends JPanel {
         lblPriority = new JLabel("Priority:");
         lblAssignedPerson = new JLabel("Assigned:");
         lblUserStory = new JLabel("US:");
-        lblEstimatedHours = new JLabel("Estimated hours:");
+        lblHours = new JLabel("Hours:");
+        lblEstimatedHours = new JLabel("Estimated (h):");
         lblDescription = new JLabel("Desciption:");
+        lblAuthor = new JLabel("Author");
+        lblSpentHours = new JLabel("Spent (h):");
+        lblStatus = new JLabel("Status:");
 
         txtId = new JTextField();
         txtPriority = new JTextField();
@@ -49,24 +55,35 @@ public class TaskEditPanel extends JPanel {
         cbxUserStory = new JComboBox<UserStoryHolder>();
         txtEstimatedHours = new JTextField();
         txtAreaDescription = new JTextArea();
+        txtAuthor = new JTextField();
+        txtSpentHours = new JTextField();
+        txtStatus = new JTextField();
 
-        lblId.setBounds(0, 0, 50, 20);
-        txtId.setBounds(60, 0, 100, 20);
+        lblId.setBounds(5, 5, 45, 20);
+        txtId.setBounds(60, 5, 100, 20);
 
-        lblPriority.setBounds(170, 0, 50, 20);
-        txtPriority.setBounds(230, 0, 100, 20);
+        lblStatus.setBounds(170, 5, 60, 20);
+        txtStatus.setBounds(230, 5, 100, 20);
 
-        lblAssignedPerson.setBounds(0, 30, 60, 20);
-        txtAssignedPerson.setBounds(70, 30, 100, 20);
+        lblAuthor.setBounds(5, 30, 45, 20);
+        txtAuthor.setBounds(60, 30, 100, 20);
 
-        lblUserStory.setBounds(180, 30, 30, 20);
-        cbxUserStory.setBounds(220, 30, 100, 20);
+        lblAssignedPerson.setBounds(170,30,60,20);
+        txtAssignedPerson.setBounds(230,30,100,20);
 
-        lblEstimatedHours.setBounds(0, 60, 100, 20);
-        txtEstimatedHours.setBounds(110, 60, 100, 20);
+        lblPriority.setBounds(5, 55, 45, 20);
+        txtPriority.setBounds(60, 55, 100, 20);
 
-        lblDescription.setBounds(0, 90, 70, 20);
-        txtAreaDescription.setBounds(80, 90, 250, 150);
+        lblUserStory.setBounds(5, 80, 45, 20);
+        cbxUserStory.setBounds(60, 80, 270, 20);
+
+        lblEstimatedHours.setBounds(5, 105, 100, 20);
+        txtEstimatedHours.setBounds(90, 105, 50, 20);
+        lblSpentHours.setBounds(145, 105, 80, 20);
+        txtSpentHours.setBounds(210, 105, 50, 20);
+
+        lblDescription.setBounds(5, 145, 70, 20);
+        txtAreaDescription.setBounds(5, 165, 325, 150);
         txtAreaDescription.setLineWrap(true);
 
         add(lblId);
@@ -75,13 +92,19 @@ public class TaskEditPanel extends JPanel {
         add(lblUserStory);
         add(lblEstimatedHours);
         add(lblDescription);
+        add(lblAuthor);
+        add(lblSpentHours);
+        add(lblStatus);
+        add(lblHours);
         add(txtId);
         add(txtPriority);
         add(txtAssignedPerson);
         add(cbxUserStory);
         add(txtEstimatedHours);
         add(txtAreaDescription);
-
+        add(txtAuthor);
+        add(txtSpentHours);
+        add(txtStatus);
 
         this.setPreferredSize(new Dimension(300, 300));
         this.setBackground(Color.RED);
@@ -172,11 +195,10 @@ public class TaskEditPanel extends JPanel {
             task.setEstimatedHours(null);
         }
 
-        if(cbxUserStory.getSelectedItem().equals(UserStoryHolder.UNKNOWN)){
+        if (cbxUserStory.getSelectedItem().equals(UserStoryHolder.UNKNOWN)) {
             task.setUserStory(null);
-        }
-        else {
-            UserStory userStory =new UserStory();
+        } else {
+            UserStory userStory = new UserStory();
             userStory.setId(cbxUserStory.getSelectedItem().toString());
             task.setUserStory(userStory);
         }

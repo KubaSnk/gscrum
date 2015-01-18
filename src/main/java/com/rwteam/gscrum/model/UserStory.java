@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Created by wrabel on 12/1/2014.
  */
-public class UserStory {
+public class UserStory implements Comparable{
     String id;
     String author;
     String title;
@@ -127,6 +127,15 @@ public class UserStory {
     public String toString() {
 //        getTaskCollection().stream().filter(e -> e.endDate.equals(e.startDate)).forEach(e -> System.out.println(e));
         return id;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if(o instanceof UserStory){
+            UserStory userStoryToCompare = (UserStory)o;
+            return id.compareTo(userStoryToCompare.getId());
+        }
+        return 0;
     }
 
 //    @Override

@@ -9,6 +9,7 @@ import com.rwteam.gscrum.model.UserStory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector.getInstance;
@@ -25,6 +26,7 @@ public class DataProvider {
         for (Event event : getInstance().getEventsForCalendarID(calendarID)) {
             userStories.add(UserStoryParser.parseUserStory(event, this));
         }
+        Collections.sort(userStories);
         return userStories;
     }
 

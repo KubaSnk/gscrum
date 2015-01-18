@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by wrabel on 11/30/2014.
  */
-public class Task {
+public class Task implements Comparable {
     String id;
     String author;
     String name;
@@ -168,5 +168,14 @@ public class Task {
 
 
         return googleTask;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof Task) {
+            Task taskToCompare = (Task) o;
+            return getId().compareTo(taskToCompare.getId());
+        }
+        return 0;
     }
 }

@@ -7,6 +7,8 @@ import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -52,6 +54,7 @@ public class UserStoryParser {
 
 
         }
+        Collections.sort(taskList);
         userStory.setTaskCollection(taskList);
         return userStory;
     }

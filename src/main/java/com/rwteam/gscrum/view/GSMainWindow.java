@@ -92,7 +92,7 @@ public class GSMainWindow implements ToolWindowFactory {
         txtTaskDetails.setBounds(330, 90, 500, 200);
         btnAddNewTask.setBounds(10, 295, 100, 30);
         btnSaveTask.setBounds(120, 295, 100, 30);
-        taskEditPanel.setBounds(10, 330, 400, 200);
+        taskEditPanel.setBounds(10, 330, 600, 500);
 
         contentPanel.setLayout(null);
         contentPanel.setBorder(new BevelBorder(BevelBorder.RAISED));

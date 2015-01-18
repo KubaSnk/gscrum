@@ -83,8 +83,10 @@ public class TaskEditPanel extends JPanel {
         txtSpentHours.setBounds(210, 105, 50, 20);
 
         lblDescription.setBounds(5, 145, 70, 20);
-        txtAreaDescription.setBounds(5, 165, 325, 150);
+        txtAreaDescription.setBounds(5, 165, 325, 80);
         txtAreaDescription.setLineWrap(true);
+
+        setTooltips();
 
         add(lblId);
         add(lblPriority);
@@ -109,6 +111,18 @@ public class TaskEditPanel extends JPanel {
         this.setPreferredSize(new Dimension(300, 300));
         this.setBackground(Color.RED);
 
+    }
+
+    private void setTooltips() {
+        txtId.setToolTipText("Task ID");
+        txtPriority.setToolTipText("Task  priority");
+        txtAssignedPerson.setToolTipText("Assigned person");
+        cbxUserStory.setToolTipText("User to story to which task is assigned");
+        txtEstimatedHours.setToolTipText("Estimated time for task ending");
+        txtAreaDescription.setToolTipText("Task detailed description");
+        txtAuthor.setToolTipText("Task author");
+        txtSpentHours.setToolTipText("Amount of hours already spent for this task");
+        txtStatus.setToolTipText("Current status of the task");
     }
 
     public static void main(String... args) {
@@ -136,9 +150,11 @@ public class TaskEditPanel extends JPanel {
         txtAreaDescription.setText(task.getDescription());
         txtPriority.setText(task.getPriority());
         txtAssignedPerson.setText(task.getAssignedPerson());
+        txtAuthor.setText(task.getAuthor());
+        txtStatus.setText(task.getStatus());
 
 //        if(gsMainWindow.c)
-// TODO
+// TODO(
 //        cbxUserStory.setText(task.getUserStory().getId());
 
         UserStory userStory = task.getUserStory();
@@ -154,6 +170,13 @@ public class TaskEditPanel extends JPanel {
             txtEstimatedHours.setText("--");
         } else {
             txtEstimatedHours.setText(estimatedHours.toString());
+        }
+
+        Double spentHours = task.getSpentHours();
+        if (spentHours == null) {
+            txtSpentHours.setText("--");
+        } else {
+            txtSpentHours.setText(spentHours.toString());
         }
     }
 

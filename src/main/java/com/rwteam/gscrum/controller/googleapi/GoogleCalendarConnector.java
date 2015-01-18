@@ -29,9 +29,7 @@ import java.util.*;
  */
 public class GoogleCalendarConnector {
     private static final String APPLICATION_NAME = "gscrumplugin";
-    private static final java.io.File CALENDAR_DATA_STORE_DIR = new java.io.File("D:/userdata/wrabel/.store/calendar_sample");
-    private static final java.io.File TASKS_DATA_STORE_DIR = new java.io.File("D:/userdata/wrabel/.store/tasks_sample");
-    private static final String KEYSTORE_DIR_PATH = "D:/userdata/wrabel/.store/";
+    private static final String KEYSTORE_DIR_PATH = System.getProperty("user.home") + "/.gscrum_store/";
     private static final String CALENDAR_KEYSTORE_SUBDIR_PATH = "calendar_store";
     private static final String TASKS_KEYSTORE_SUBDIR_PATH = "tasks_store";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
@@ -94,6 +92,9 @@ public class GoogleCalendarConnector {
 
     public static String[] getProfiles() {
         File file = new File(KEYSTORE_DIR_PATH);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
         return file.list();
     }
 
@@ -124,6 +125,9 @@ public class GoogleCalendarConnector {
     public String connect(String profileName) throws Exception {
         logger.log("Connecting... ");
         httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+
+        logger.log("Keystore dir: " + KEYSTORE_DIR_PATH);
+
         calendarDataStoreFactory = new FileDataStoreFactory(new File(KEYSTORE_DIR_PATH + profileName + "/" + CALENDAR_KEYSTORE_SUBDIR_PATH));
         Credential credential = authorize();
         tasksDataStoreFactory = new FileDataStoreFactory(new File(KEYSTORE_DIR_PATH + profileName + "/" + TASKS_KEYSTORE_SUBDIR_PATH));

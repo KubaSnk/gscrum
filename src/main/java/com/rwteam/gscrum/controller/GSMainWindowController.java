@@ -112,6 +112,6 @@ public class GSMainWindowController {
     }
 
     private boolean checkProfileName(String profileName) {
-        return !profileName.isEmpty() && CharMatcher.JAVA_LETTER_OR_DIGIT.matchesAllOf(profileName);
+        return profileName!=null && !profileName.isEmpty() && CharMatcher.JAVA_LETTER_OR_DIGIT.matchesAllOf(profileName);
     }
 }

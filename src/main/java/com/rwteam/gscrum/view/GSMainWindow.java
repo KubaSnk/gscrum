@@ -31,6 +31,7 @@ public class GSMainWindow implements ToolWindowFactory {
     private JButton btnLogin;
     private JButton btnAddNewTask;
     private JButton btnSaveTask;
+    private JButton btnEditTask;
     private JButton btnAddNewProfile;
     private JButton btnLoadCalendarInfo;
     private DefaultComboBoxModel<String> cbxChooseCalendarModel;
@@ -63,6 +64,7 @@ public class GSMainWindow implements ToolWindowFactory {
         btnLogin = new JButton("Login");
         btnAddNewTask = new JButton("New task");
         btnSaveTask = new JButton("Save task");
+        btnEditTask = new JButton("Edit task");
         btnAddNewProfile = new JButton("Add new");
         btnLoadCalendarInfo = new JButton("Load calendar");
         lblChooseCalendar = new JLabel("Calendar");
@@ -92,6 +94,7 @@ public class GSMainWindow implements ToolWindowFactory {
         txtTaskDetails.setBounds(330, 90, 500, 200);
         btnAddNewTask.setBounds(10, 295, 100, 30);
         btnSaveTask.setBounds(120, 295, 100, 30);
+        btnEditTask.setBounds(220, 295,100,30);
         taskEditPanel.setBounds(10, 330, 600, 500);
 
         contentPanel.setLayout(null);
@@ -116,6 +119,7 @@ public class GSMainWindow implements ToolWindowFactory {
         contentPanel.add(txtTaskDetails);
         contentPanel.add(btnAddNewTask);
         contentPanel.add(btnSaveTask);
+        contentPanel.add(btnEditTask);
         contentPanel.add(taskEditPanel);
 
         container.add(statusPanel, BorderLayout.SOUTH);
@@ -239,7 +243,7 @@ public class GSMainWindow implements ToolWindowFactory {
         txtTaskDetails.setText("");
         Task task = listTasks.getSelectedValue();
         if (task != null) {
-            taskEditPanel.populateWithTask(task, listUserStories.getModel());
+            taskEditPanel.populateWithTask(task, listUserStories.getModel(), true);
             txtTaskDetails.setText(task.getAllInfo());
         }
     }
@@ -269,7 +273,7 @@ public class GSMainWindow implements ToolWindowFactory {
         Task task = new Task();
         task.setDescription("Enter description here....");
         task.setId("Set id...");
-        taskEditPanel.populateWithTask(task, listUserStories.getModel());
+        taskEditPanel.populateWithTask(task, listUserStories.getModel(), false);
     }
 
     private void loadCalendarAction() {
@@ -318,7 +322,7 @@ public class GSMainWindow implements ToolWindowFactory {
                 taskEditPanel.setVisible(isUserLogged);
                 btnAddNewTask.setVisible(isUserLogged);
                 btnSaveTask.setVisible(isUserLogged);
-
+                btnEditTask.setVisible(isUserLogged);
 
                 if (!isUserLogged) {
                     clearAll();

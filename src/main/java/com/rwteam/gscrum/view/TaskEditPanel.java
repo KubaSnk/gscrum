@@ -4,12 +4,19 @@ import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 
 /**
  * Created by wrabel on 1/13/2015.
  */
 public class TaskEditPanel extends JPanel {
+    private static final Color DEFAULT_TEXT_COMPONENTS_BACKGROUND_COLOR = Color.WHITE;
+    private static final Color HIGHLIGHTED_TEXT_COMPONENT_BACKGROUND_COLOR = Color.GREEN;
+    private static final String EMPTY_NUMBER_STRING = "--";
     private final GSMainWindow gsMainWindow;
     private final JLabel lblHours;
 
@@ -32,6 +39,8 @@ public class TaskEditPanel extends JPanel {
     private JLabel lblAuthor;
     private JLabel lblSpentHours;
     private JLabel lblStatus;
+    private Task currentTask;
+    private boolean trackChanges = false;
 
 
     public TaskEditPanel(GSMainWindow gsMainWindow) {
@@ -68,8 +77,8 @@ public class TaskEditPanel extends JPanel {
         lblAuthor.setBounds(5, 30, 45, 20);
         txtAuthor.setBounds(60, 30, 100, 20);
 
-        lblAssignedPerson.setBounds(170,30,60,20);
-        txtAssignedPerson.setBounds(230,30,100,20);
+        lblAssignedPerson.setBounds(170, 30, 60, 20);
+        txtAssignedPerson.setBounds(230, 30, 100, 20);
 
         lblPriority.setBounds(5, 55, 45, 20);
         txtPriority.setBounds(60, 55, 100, 20);
@@ -108,9 +117,91 @@ public class TaskEditPanel extends JPanel {
         add(txtSpentHours);
         add(txtStatus);
 
+        initChangeListeners();
+
         this.setPreferredSize(new Dimension(300, 300));
         this.setBackground(Color.RED);
 
+    }
+
+    public static void main(String... args) {
+        JFrame jFrame = new JFrame();
+        jFrame.setVisible(true);
+        jFrame.setSize(400, 400);
+        TaskEditPanel taskEditPanel = new TaskEditPanel(null);
+
+        jFrame.add(taskEditPanel);
+        jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    }
+
+    private void initChangeListeners() {
+        if (currentTask != null) {
+            setTextComponentListener(txtId, currentTask.getId());
+            setTextComponentListener(txtAuthor, currentTask.getAuthor());
+            System.out.println("Change assigned person ->" + currentTask.getAssignedPerson() + "<-");
+            setTextComponentListener(txtAssignedPerson, currentTask.getAssignedPerson());
+            setTextComponentListener(txtEstimatedHours, currentTask.getEstimatedHours());
+            setTextComponentListener(txtPriority, currentTask.getPriority());
+            setTextComponentListener(txtSpentHours, currentTask.getSpentHours());
+            setTextComponentListener(txtStatus, currentTask.getStatus());
+
+            setTextComponentListener(txtAreaDescription, currentTask.getDescription());
+        }
+//        else {
+//            setTextComponentListener(txtId, null);
+//            setTextComponentListener(txtAuthor, null);
+//            setTextComponentListener(txtAssignedPerson, null);
+//            setTextComponentListener(txtEstimatedHours, null);
+//            setTextComponentListener(txtPriority, null);
+//            setTextComponentListener(txtSpentHours, null);
+//            setTextComponentListener(txtStatus, null);
+//        }
+
+    }
+
+    private void setTextComponentListener(final JTextComponent textField, final Double defaultValue) {
+        String defaultValueString = "";
+        if (defaultValue != null) {
+            defaultValueString = Double.toString(defaultValue);
+        }
+
+        setTextComponentListener(textField, defaultValueString);
+    }
+
+    private void setTextComponentListener(final JTextComponent textField, final String defaultValue) {
+        System.out.println("Setting for component: " + textField + " default value: " + defaultValue);
+        String text = textField.getText();
+        textField.setDocument(new DefaultStyledDocument());
+        textField.setText(text);
+
+        textField.setBackground(DEFAULT_TEXT_COMPONENTS_BACKGROUND_COLOR);
+        textField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                warn();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                warn();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                warn();
+            }
+
+            public void warn() {
+                if (textField.equals(txtAssignedPerson)) {
+                    System.out.println("Text: ->" + textField.getText() + "<-");
+                    System.out.println("Default: ->" + defaultValue + "<-");
+                }
+                String innerDefaultValue = defaultValue == null ? "" : defaultValue;
+                if (currentTask != null && !textField.getText().equals(innerDefaultValue) && trackChanges) {
+                    textField.setBackground(HIGHLIGHTED_TEXT_COMPONENT_BACKGROUND_COLOR);
+                } else {
+                    System.out.println("Setting default color");
+                    textField.setBackground(DEFAULT_TEXT_COMPONENTS_BACKGROUND_COLOR);
+                }
+            }
+        });
     }
 
     private void setTooltips() {
@@ -125,16 +216,6 @@ public class TaskEditPanel extends JPanel {
         txtStatus.setToolTipText("Current status of the task");
     }
 
-    public static void main(String... args) {
-        JFrame jFrame = new JFrame();
-        jFrame.setVisible(true);
-        jFrame.setSize(400, 400);
-        TaskEditPanel taskEditPanel = new TaskEditPanel(null);
-
-        jFrame.add(taskEditPanel);
-        jFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    }
-
     public void clearData() {
         txtId.setText("");
         txtAreaDescription.setText("");
@@ -144,14 +225,20 @@ public class TaskEditPanel extends JPanel {
 //        cbxUserStory.setText("");
     }
 
-    public void populateWithTask(Task task, ListModel<UserStory> listUserStories) {
+    public void populateWithTask(Task task, ListModel<UserStory> listUserStories, boolean trackChanges) {
+        this.currentTask = task;
+        this.trackChanges = trackChanges;
+
         clearData();
+        initChangeListeners();
+
         txtId.setText(task.getId());
         txtAreaDescription.setText(task.getDescription());
         txtPriority.setText(task.getPriority());
         txtAssignedPerson.setText(task.getAssignedPerson());
         txtAuthor.setText(task.getAuthor());
         txtStatus.setText(task.getStatus());
+
 
 //        if(gsMainWindow.c)
 // TODO(
@@ -167,14 +254,14 @@ public class TaskEditPanel extends JPanel {
 
         Double estimatedHours = task.getEstimatedHours();
         if (estimatedHours == null) {
-            txtEstimatedHours.setText("--");
+            txtEstimatedHours.setText(EMPTY_NUMBER_STRING);
         } else {
             txtEstimatedHours.setText(estimatedHours.toString());
         }
 
         Double spentHours = task.getSpentHours();
         if (spentHours == null) {
-            txtSpentHours.setText("--");
+            txtSpentHours.setText(EMPTY_NUMBER_STRING);
         } else {
             txtSpentHours.setText(spentHours.toString());
         }

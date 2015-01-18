@@ -20,7 +20,7 @@ import static com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector.get
 public class DataProvider {
     List<Task> tasksCache = null;
 
-    public Collection<UserStory> getUserStories(String calendarID) throws IOException {
+    public List<UserStory> getUserStories(String calendarID) throws IOException {
         refreshTasksInfo();
         List<UserStory> userStories = new ArrayList<>();
         for (Event event : getInstance().getEventsForCalendarID(calendarID)) {

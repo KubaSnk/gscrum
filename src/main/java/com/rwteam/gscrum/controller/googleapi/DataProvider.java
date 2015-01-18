@@ -8,7 +8,6 @@ import com.rwteam.gscrum.model.UserStory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,11 +18,13 @@ import static com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector.get
  */
 public class DataProvider {
     List<Task> tasksCache = null;
+    GoogleCalendarConnector connector = getInstance();
+
 
     public List<UserStory> getUserStories(String calendarID) throws IOException {
         refreshTasksInfo();
         List<UserStory> userStories = new ArrayList<>();
-        for (Event event : getInstance().getEventsForCalendarID(calendarID)) {
+        for (Event event : connector.getEventsForCalendarID(calendarID)) {
             userStories.add(UserStoryParser.parseUserStory(event, this));
         }
         Collections.sort(userStories);
@@ -32,7 +33,7 @@ public class DataProvider {
 
     private void refreshTasksInfo() {
         tasksCache = new ArrayList<Task>();
-        for (com.google.api.services.tasks.model.Task taskFromGoogleAPI : getInstance().getTasks()) {
+        for (com.google.api.services.tasks.model.Task taskFromGoogleAPI : connector.getTasks()) {
             Task task = TaskParser.parseTask(taskFromGoogleAPI);
             if (task != null) {
                 tasksCache.add(task);

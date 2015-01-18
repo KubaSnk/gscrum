@@ -1,8 +1,7 @@
 package com.rwteam.gscrum.model;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by wrabel on 12/1/2014.
@@ -20,13 +19,13 @@ public class UserStory implements Comparable{
     Date deadlineDate;
     Integer estimatedStoryPoints;
     Integer spentStoryPoints;
-    Collection<Task> taskCollection;
+    List<Task> taskCollection;
 
-    public Collection<Task> getTaskCollection() {
+    public List<Task> getTaskCollection() {
         return taskCollection;
     }
 
-    public void setTaskCollection(Collection<Task> taskCollection) {
+    public void setTaskCollection(List<Task> taskCollection) {
         this.taskCollection = taskCollection;
     }
 

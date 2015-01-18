@@ -2,14 +2,13 @@ package com.rwteam.gscrum.controller.parsers;
 
 import com.google.api.services.calendar.model.Event;
 import com.rwteam.gscrum.controller.googleapi.DataProvider;
-import com.rwteam.gscrum.controller.utils.ParsersUtils;
 import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
+import org.apache.http.client.utils.DateUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+
+import static com.rwteam.gscrum.controller.utils.ParsersUtils.cutoutValueFromTag;
 
 /**
  * Created by kubasnk on 12/17/14.
@@ -29,7 +28,9 @@ public class UserStoryParser {
         UserStory userStory = new UserStory();
 
 
-        userStory.setId(ParsersUtils.cutoutValueFromTag(value, "id"));
+        userStory.setId(cutoutValueFromTag(value, "id"));
+        userStory.setDeadlineDate( parseDate(cutoutValueFromTag(value, "deadline_date")) );
+        userStory.setStartDate( parseDate( cutoutValueFromTag(value, "start_date") ) );
 
 
 //        Date startDate = new Date(Date.parse(ParsersUtils.cutoutValueFromTag(value, "start_date")));
@@ -37,11 +38,11 @@ public class UserStoryParser {
 
 
         List<Task> taskList = new ArrayList<>();
-        String tasksString = ParsersUtils.cutoutValueFromTag(value, "tasks");
+        String tasksString = cutoutValueFromTag(value, "tasks");
         String[] tasks = value.split("<task>");
         for (int i = 1; i < tasks.length; i++) {
             String currentTask = tasks[i].split("</task>")[0];
-            String taskId = ParsersUtils.cutoutValueFromTag(currentTask, "id");
+            String taskId = cutoutValueFromTag(currentTask, "id");
             Task task = dataProvider.getTask(taskId);
 
             if (task == null) {
@@ -57,6 +58,11 @@ public class UserStoryParser {
         Collections.sort(taskList);
         userStory.setTaskCollection(taskList);
         return userStory;
+    }
+
+    private static Date parseDate(String deadline_date) {
+        Date date = DateUtils.parseDate(deadline_date, new String[]{"dd-MM-yyyy"});
+        return org.apache.commons.lang3.time.DateUtils.round(date, Calendar.DAY_OF_MONTH);
     }
 
 }

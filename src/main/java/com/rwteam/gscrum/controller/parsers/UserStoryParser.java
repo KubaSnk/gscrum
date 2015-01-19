@@ -5,7 +5,6 @@ import com.rwteam.gscrum.controller.googleapi.DataProvider;
 import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
 import com.rwteam.gscrum.utils.Logger;
-import org.apache.http.client.utils.DateUtils;
 
 import java.text.ParseException;
 import java.util.*;
@@ -70,7 +69,7 @@ public class UserStoryParser {
             new Logger(UserStoryParser.class).logError(e);
             e.printStackTrace();
         }
-        return org.apache.commons.lang3.time.DateUtils.round(date, Calendar.DAY_OF_MONTH);
+        return org.apache.commons.lang.time.DateUtils.round(date, Calendar.DAY_OF_MONTH);
     }
 
 }

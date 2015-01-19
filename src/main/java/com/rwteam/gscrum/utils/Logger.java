@@ -18,7 +18,7 @@ public class Logger {
         System.out.println("[" + new Date() + "] " + classObj.getName() + "\n\t\t " + msg);
     }
 
-    public void logError(IOException e) {
+    public void logError(Exception e) {
         System.err.println("[" + new Date() + "] " + classObj.getName() + "\n\t\t " + e.getMessage());
     }
 }

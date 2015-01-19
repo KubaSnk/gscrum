@@ -4,8 +4,10 @@ import com.google.api.services.calendar.model.Event;
 import com.rwteam.gscrum.controller.googleapi.DataProvider;
 import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
+import com.rwteam.gscrum.utils.Logger;
 import org.apache.http.client.utils.DateUtils;
 
+import java.text.ParseException;
 import java.util.*;
 
 import static com.rwteam.gscrum.controller.utils.ParsersUtils.cutoutValueFromTag;
@@ -61,7 +63,13 @@ public class UserStoryParser {
     }
 
     private static Date parseDate(String deadline_date) {
-        Date date = DateUtils.parseDate(deadline_date, new String[]{"dd-MM-yyyy"});
+        Date date = null;
+        try {
+            date = org.apache.commons.lang.time.DateUtils.parseDate(deadline_date, new String[]{"dd-MM-yyyy"});
+        } catch (ParseException e) {
+            new Logger(UserStoryParser.class).logError(e);
+            e.printStackTrace();
+        }
         return org.apache.commons.lang3.time.DateUtils.round(date, Calendar.DAY_OF_MONTH);
     }
 

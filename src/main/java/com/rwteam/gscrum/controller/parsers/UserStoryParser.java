@@ -64,12 +64,12 @@ public class UserStoryParser {
     private static Date parseDate(String deadline_date) {
         Date date = null;
         try {
-            date = org.apache.commons.lang.time.DateUtils.parseDate(deadline_date, new String[]{"dd-MM-yyyy"});
+            date = org.apache.commons.lang3.time.DateUtils.parseDate(deadline_date, new String[]{"dd-MM-yyyy"});
         } catch (ParseException e) {
             new Logger(UserStoryParser.class).logError(e);
             e.printStackTrace();
         }
-        return org.apache.commons.lang.time.DateUtils.round(date, Calendar.DAY_OF_MONTH);
+        return org.apache.commons.lang3.time.DateUtils.round(date, Calendar.DAY_OF_MONTH);
     }
 
 }

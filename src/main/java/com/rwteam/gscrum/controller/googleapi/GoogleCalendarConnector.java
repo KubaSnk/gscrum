@@ -95,12 +95,20 @@ public class GoogleCalendarConnector {
         if (!file.exists()) {
             file.mkdirs();
         }
-        return file.list();
+        String[] fileList = file.list();
+        return fileList;
     }
 
     public static void addNewProfile(String profileName) {
         File newProfileDir = new File(KEYSTORE_DIR_PATH + profileName);
         newProfileDir.mkdir();
+    }
+
+    public static void deleteProfile(String profileName) throws IOException {
+        File profileDir = new File(KEYSTORE_DIR_PATH + profileName);
+        if (profileDir.exists()) {
+            org.apache.commons.io.FileUtils.deleteDirectory(profileDir);
+        }
     }
 
     public List<Task> getTasks() {

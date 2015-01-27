@@ -99,6 +99,10 @@ public class GSMainWindowController {
 
     public void init() {
         logger.log("Initializing Controller");
+        refreshProfilesComboBox();
+    }
+
+    public void refreshProfilesComboBox() {
         view.populateProfilesComboBox(GoogleCalendarConnector.getProfiles());
     }
 
@@ -112,6 +116,15 @@ public class GSMainWindowController {
     }
 
     private boolean checkProfileName(String profileName) {
-        return profileName!=null && !profileName.isEmpty() && CharMatcher.JAVA_LETTER_OR_DIGIT.matchesAllOf(profileName);
+        return profileName != null && !profileName.isEmpty() && CharMatcher.JAVA_LETTER_OR_DIGIT.matchesAllOf(profileName);
+    }
+
+    public void deleteProfile(String profileName) {
+        try {
+            GoogleCalendarConnector.deleteProfile(profileName);
+        } catch (IOException e) {
+            view.displayErrorDialog("Cannot remove profile '" + profileName + "'");
+            logger.logError(e);
+        }
     }
 }

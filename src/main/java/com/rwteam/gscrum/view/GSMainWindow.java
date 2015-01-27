@@ -33,6 +33,7 @@ public class GSMainWindow implements ToolWindowFactory {
     private JButton btnSaveTask;
     private JButton btnEditTask;
     private JButton btnAddNewProfile;
+    private JButton btnDeleteProfile;
     private JButton btnLoadCalendarInfo;
     private DefaultComboBoxModel<String> cbxChooseCalendarModel;
     private JComboBox<String> cbxChooseCalendar;
@@ -66,6 +67,7 @@ public class GSMainWindow implements ToolWindowFactory {
         btnSaveTask = new JButton("Save task");
         btnEditTask = new JButton("Edit task");
         btnAddNewProfile = new JButton("Add new");
+        btnDeleteProfile = new JButton("Delete");
         btnLoadCalendarInfo = new JButton("Load calendar");
         lblChooseCalendar = new JLabel("Calendar");
         cbxChooseCalendarModel = new DefaultComboBoxModel<String>();
@@ -86,6 +88,7 @@ public class GSMainWindow implements ToolWindowFactory {
         cbxChooseProfile.setBounds(100, 5, 150, 25);
         btnLogin.setBounds(255, 5, 70, 25);
         btnAddNewProfile.setBounds(330, 5, 80, 25);
+        btnDeleteProfile.setBounds(415, 5, 80, 25);
         lblChooseCalendar.setBounds(10, 40, 100, 25);
         cbxChooseCalendar.setBounds(100, 40, 200, 25);
         btnLoadCalendarInfo.setBounds(300, 40, 100, 25);
@@ -111,6 +114,7 @@ public class GSMainWindow implements ToolWindowFactory {
         contentPanel.add(cbxChooseProfile);
         contentPanel.add(btnLogin);
         contentPanel.add(btnAddNewProfile);
+        contentPanel.add(btnDeleteProfile);
         contentPanel.add(btnLoadCalendarInfo);
         contentPanel.add(lblChooseCalendar);
         contentPanel.add(cbxChooseCalendar);
@@ -155,6 +159,12 @@ public class GSMainWindow implements ToolWindowFactory {
             }
         });
 
+        btnDeleteProfile.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteProfileAction((String) cbxChooseProfile.getSelectedItem());
+            }
+        });
         btnLoadCalendarInfo.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -227,6 +237,7 @@ public class GSMainWindow implements ToolWindowFactory {
         });
     }
 
+
     private void editTaskAction() {
         taskEditPanel.setEditable(true);
     }
@@ -234,6 +245,19 @@ public class GSMainWindow implements ToolWindowFactory {
     private void addNewProfileAction() {
         String profileName = JOptionPane.showInputDialog(container, "Enter profile name?", "Create new GScrum profile", JOptionPane.QUESTION_MESSAGE);
         controller.addNewProfile(profileName);
+    }
+
+    private void deleteProfileAction(String profileName) {
+        if (profileName == null || profileName.isEmpty()) {
+            displayErrorDialog("No profile has been selected");
+            return;
+        }
+
+        int dialogResult = JOptionPane.showConfirmDialog(null, "Do you really want to remove profile " + profileName + "?", "Delete profile?", JOptionPane.YES_NO_OPTION);
+        if (dialogResult == JOptionPane.YES_OPTION) {
+            controller.deleteProfile(profileName);
+            controller.refreshProfilesComboBox();
+        }
     }
 
     private void taskDoubleClickedAction() {

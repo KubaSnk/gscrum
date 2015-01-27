@@ -168,4 +168,15 @@ public class GoogleCalendarConnector {
             }
         }
     }
+
+    public void updateTask(Task task) {
+        if (task != null) {
+            try {
+                Task result = tasksClient.tasks().update("@default", task.getId(), task).execute();
+                logger.log("Updated task " + result.getId());
+            } catch (IOException e) {
+                logger.logError(e);
+            }
+        }
+    }
 }

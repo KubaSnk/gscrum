@@ -11,6 +11,7 @@ import com.rwteam.gscrum.view.GSMainWindow;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Created by wrabel on 1/10/2015.
@@ -149,5 +150,31 @@ public class GSMainWindowController {
             }
         }
         return false;
+    }
+
+    public void updateTask(Task task) {
+        logger.log("Updating task with id: " + task.getId());
+        dataProvider.refreshTasksInfo();
+        if (!existsTaskWithID(task.getId())) {
+            view.displayErrorDialog("Cannot update task. Task does not exists!");
+        } else {
+            Task existingTask = dataProvider.getTask(task.getId());
+            Map<String, String> changesSet = existingTask.getChangesSet(task);
+            String changesetString = getChangesetString(changesSet);
+            boolean questionResult = view.displayYesNoDialog("Do you really want to update task: " + existingTask.getId() + "?" + "\n" + changesetString, "Update task?");
+//            GoogleCalendarConnector.getInstance().saveTask(task.convertToGoogleTask());
+            if (questionResult) {
+                GoogleCalendarConnector.getInstance().updateTask(task.convertToGoogleTask());
+                view.displayInfoDialog("Task succesfully updated!");
+            }
+        }
+    }
+
+    private String getChangesetString(Map<String, String> changesSet) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : changesSet.entrySet()) {
+            sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
+        return sb.toString();
     }
 }

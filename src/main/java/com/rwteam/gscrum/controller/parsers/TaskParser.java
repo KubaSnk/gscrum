@@ -23,18 +23,24 @@ public class TaskParser {
 
 
         Task task = new Task();
+        task.setGoogleApiId(googleTask.getId());
         task.setId(ParsersUtils.cutoutValueFromTag(value, "id"));
         task.setDescription(ParsersUtils.cutoutValueFromTag(value, "description"));
         task.setAssignedPerson(ParsersUtils.cutoutValueFromTag(value, "assigned_person"));
+        task.setAuthor(ParsersUtils.cutoutValueFromTag(value, "author"));
+        task.setStatus(ParsersUtils.cutoutValueFromTag(value, "status"));
         task.setPriority(ParsersUtils.cutoutValueFromTag(value, "priority"));
         String estimatedHours = ParsersUtils.cutoutValueFromTag(value, "estimated_hours").replace("h", "");
         try {
-
             task.setEstimatedHours(Double.parseDouble(estimatedHours));
-        } catch (Exception ex)
-
-        {
+        } catch (Exception ex) {
             task.setEstimatedHours(null);
+        }
+        String spentHours = ParsersUtils.cutoutValueFromTag(value, "spent_hours").replace("h", "");
+        try {
+            task.setSpentHours(Double.parseDouble(spentHours));
+        } catch (Exception ex) {
+            task.setSpentHours(null);
         }
 
         return task;

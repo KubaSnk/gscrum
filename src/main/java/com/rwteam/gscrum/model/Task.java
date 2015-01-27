@@ -1,12 +1,16 @@
 package com.rwteam.gscrum.model;
 
+import com.google.api.client.util.ArrayMap;
+
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by wrabel on 11/30/2014.
  */
 public class Task implements Comparable {
     String id;
+    String googleApiId;
     String author;
     String name;
     String description;
@@ -115,6 +119,14 @@ public class Task implements Comparable {
         this.userStory = userStoryID;
     }
 
+    public String getGoogleApiId() {
+        return googleApiId;
+    }
+
+    public void setGoogleApiId(String googleApiId) {
+        this.googleApiId = googleApiId;
+    }
+
     @Override
     public String toString() {
         return id;
@@ -143,7 +155,7 @@ public class Task implements Comparable {
         com.google.api.services.tasks.model.Task googleTask = new com.google.api.services.tasks.model.Task();
         googleTask.setNotes(getDescription());
         googleTask.setTitle("[" + getUserStory() + "] - [" + getId() + "] " + getDescription());
-
+        googleTask.setId(getGoogleApiId());
         StringBuilder sbNotes = new StringBuilder();
         sbNotes.append("<task>");
         if (getId() != null) {
@@ -157,13 +169,25 @@ public class Task implements Comparable {
             sbNotes.append("\n" +
                     "\t<assigned_person>" + getAssignedPerson() + "</assigned_person>");
         }
+        if (getAuthor() != null) {
+            sbNotes.append("\n" +
+                    "\t<author>" + getAuthor() + "</author>");
+        }
         if (getPriority() != null) {
             sbNotes.append("\n" +
                     "\t<priority>" + getPriority() + "</priority>");
         }
+        if (getStatus() != null) {
+            sbNotes.append("\n" +
+                    "\t<status>" + getStatus() + "</status>");
+        }
         if (getEstimatedHours() != null) {
             sbNotes.append("\n" +
                     "\t<estimated_hours>" + getEstimatedHours() + "</estimated_hours>");
+        }
+        if (getSpentHours() != null) {
+            sbNotes.append("\n" +
+                    "\t<spent_hours>" + getSpentHours() + "</spent_hours>");
         }
 
         sbNotes.append("\n</task>");
@@ -181,5 +205,26 @@ public class Task implements Comparable {
             return getId().compareTo(taskToCompare.getId());
         }
         return 0;
+    }
+
+    public Map<String, String> getChangesSet(Task taskToCompare) {
+        Map<String, String> changes = new ArrayMap<>();
+
+        addToChangesetIfDifferent(getAssignedPerson(), taskToCompare.getAssignedPerson(), "assigned person", changes);
+        addToChangesetIfDifferent(getAuthor(), taskToCompare.getAuthor(), "author", changes);
+        addToChangesetIfDifferent(getDescription(), taskToCompare.getDescription(), "description", changes);
+        addToChangesetIfDifferent(getEstimatedHours(), taskToCompare.getEstimatedHours(), "estimated hours", changes);
+        addToChangesetIfDifferent(getPriority(), taskToCompare.getPriority(), "priority", changes);
+        addToChangesetIfDifferent(getSpentHours(), taskToCompare.getSpentHours(), "spent hours", changes);
+        addToChangesetIfDifferent(getStatus(), taskToCompare.getStatus(), "status", changes);
+        addToChangesetIfDifferent(getUserStory(), taskToCompare.getUserStory(), "user strory", changes);
+
+        return changes;
+    }
+
+    private void addToChangesetIfDifferent(Object value1, Object value2, String key, Map<String, String> changes) {
+        if (value1 == null && value2 != null || value1 != null && !value1.equals(value2)) {
+            changes.put(key, value1 + " -> " + value2);
+        }
     }
 }

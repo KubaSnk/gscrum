@@ -292,16 +292,25 @@ public class TaskEditPanel extends JPanel {
 
     public Task retrieveTaskObject() {
         Task task = new Task();
+        task.setGoogleApiId(currentTask.getGoogleApiId());
         task.setDescription(txtAreaDescription.getText());
         task.setPriority(txtPriority.getText());
         task.setAssignedPerson(txtAssignedPerson.getText());
         task.setId(txtId.getText());
+        task.setStatus(txtStatus.getText());
+        task.setAuthor(txtAuthor.getText());
 
         try {
             double estimatedHours = Double.parseDouble(txtEstimatedHours.getText());
             task.setEstimatedHours(estimatedHours);
         } catch (Exception ex) {
             task.setEstimatedHours(null);
+        }
+        try {
+            double spentHours = Double.parseDouble(txtSpentHours.getText());
+            task.setSpentHours(spentHours);
+        } catch (Exception ex) {
+            task.setSpentHours(null);
         }
 
         if (cbxUserStory.getSelectedItem().equals(UserStoryHolder.UNKNOWN)) {
@@ -325,5 +334,10 @@ public class TaskEditPanel extends JPanel {
         txtSpentHours.setEditable(editable);
         txtStatus.setEditable(editable);
         cbxUserStory.setEditable(editable);
+    }
+
+    public void setEditable(boolean editable, boolean isInAddNewTaskMode) {
+        setEditable(editable);
+        txtId.setEditable(editable && !isInAddNewTaskMode);
     }
 }

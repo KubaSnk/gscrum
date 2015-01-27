@@ -235,7 +235,8 @@ public class GSMainWindow implements ToolWindowFactory {
 
 
     private void editTaskAction() {
-        taskEditPanel.setEditable(true);
+        taskEditPanel.setEditable(true, isInAddNewTaskMode);
+        isInAddNewTaskMode = false;
     }
 
     private void addNewProfileAction() {
@@ -274,6 +275,7 @@ public class GSMainWindow implements ToolWindowFactory {
         Task task = listTasks.getSelectedValue();
         if (task != null) {
             taskEditPanel.populateWithTask(task, listUserStories.getModel(), true);
+            isInAddNewTaskMode = false;
             taskEditPanel.setEditable(false);
         }
     }
@@ -296,6 +298,8 @@ public class GSMainWindow implements ToolWindowFactory {
 
         if(isInAddNewTaskMode){
             controller.saveNewTask(task);
+        } else {
+            controller.updateTask(task);
         }
 }
 
@@ -304,6 +308,7 @@ public class GSMainWindow implements ToolWindowFactory {
         task.setDescription("Enter description here....");
         task.setId("Set id...");
         taskEditPanel.populateWithTask(task, listUserStories.getModel(), false);
+        isInAddNewTaskMode = true;
         taskEditPanel.setEditable(true);
     }
 
@@ -390,5 +395,10 @@ public class GSMainWindow implements ToolWindowFactory {
 
     public void displayInfoDialog(String message) {
         JOptionPane.showMessageDialog(container, message, "Info!", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public boolean displayYesNoDialog(String question, String title) {
+        int dialogResult = JOptionPane.showConfirmDialog(null, question, title, JOptionPane.YES_NO_OPTION);
+        return dialogResult == JOptionPane.YES_OPTION;
     }
 }

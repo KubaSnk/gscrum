@@ -18,20 +18,27 @@ import static com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector.get
  */
 public class DataProvider {
     List<Task> tasksCache = null;
+    List<UserStory> userStoriesCache = null;
     GoogleCalendarConnector connector = getInstance();
 
 
     public List<UserStory> getUserStories(String calendarID) throws IOException {
         refreshTasksInfo();
-        List<UserStory> userStories = new ArrayList<>();
-        for (Event event : connector.getEventsForCalendarID(calendarID)) {
-            userStories.add(UserStoryParser.parseUserStory(event, this));
+        if (userStoriesCache == null) {
+            refreshUserStoriesInfo(calendarID);
         }
-        Collections.sort(userStories);
-        return userStories;
+        return userStoriesCache;
     }
 
-    private void refreshTasksInfo() {
+    private void refreshUserStoriesInfo(String calendarID) throws IOException {
+        userStoriesCache = new ArrayList<>();
+        for (Event event : connector.getEventsForCalendarID(calendarID)) {
+            userStoriesCache.add(UserStoryParser.parseUserStory(event, this));
+        }
+        Collections.sort(userStoriesCache);
+    }
+
+    public void refreshTasksInfo() {
         tasksCache = new ArrayList<Task>();
         for (com.google.api.services.tasks.model.Task taskFromGoogleAPI : connector.getTasks()) {
             Task task = TaskParser.parseTask(taskFromGoogleAPI);
@@ -43,19 +50,18 @@ public class DataProvider {
     }
 
     public List<Task> getTasks() {
-        if(tasksCache == null){
+        if (tasksCache == null) {
             refreshTasksInfo();
         }
         return tasksCache;
     }
 
-    public Task getTask(String taskId){
-        for(Task task : getTasks()){
-            if(task != null && task.getId() != null && task.getId().equals(taskId)){
+    public Task getTask(String taskId) {
+        for (Task task : getTasks()) {
+            if (task != null && task.getId() != null && task.getId().equals(taskId)) {
                 return task;
             }
         }
-
         return null;
     }
 }

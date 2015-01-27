@@ -145,24 +145,28 @@ public class Task implements Comparable {
         googleTask.setTitle("[" + getUserStory() + "] - [" + getId() + "] " + getDescription());
 
         StringBuilder sbNotes = new StringBuilder();
-        sbNotes.append("<task>\n");
+        sbNotes.append("<task>");
         if (getId() != null) {
-            sbNotes.append("<id>" + getId() + "</id>");
+            sbNotes.append("\n\t<id>" + getId() + "</id>");
         }
         if (getDescription() != null) {
-            sbNotes.append("<description>" + getDescription() + "</description>");
+            sbNotes.append("\n" +
+                    "\t<description>" + getDescription() + "</description>");
         }
         if (getAssignedPerson() != null) {
-            sbNotes.append("<assigned_person>" + getAssignedPerson() + "</assigned_person>");
+            sbNotes.append("\n" +
+                    "\t<assigned_person>" + getAssignedPerson() + "</assigned_person>");
         }
         if (getPriority() != null) {
-            sbNotes.append("<priority>" + getPriority() + "</priority>");
+            sbNotes.append("\n" +
+                    "\t<priority>" + getPriority() + "</priority>");
         }
         if (getEstimatedHours() != null) {
-            sbNotes.append("<estimated_hours>" + getEstimatedHours() + "</estimated_hours>");
+            sbNotes.append("\n" +
+                    "\t<estimated_hours>" + getEstimatedHours() + "</estimated_hours>");
         }
 
-        sbNotes.append("</task>");
+        sbNotes.append("\n</task>");
 
         googleTask.setNotes(sbNotes.toString());
 

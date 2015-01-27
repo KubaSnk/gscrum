@@ -50,9 +50,9 @@ public class GSMainWindow implements ToolWindowFactory {
 
     private TaskEditPanel taskEditPanel;
 
-    private JTextArea txtTaskDetails;
     private GSMainWindowController controller = new GSMainWindowController(this);
     private Container container;
+    private boolean isInAddNewTaskMode = true;
 
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
@@ -78,7 +78,6 @@ public class GSMainWindow implements ToolWindowFactory {
         listTasksModel = new DefaultListModel();
         listTasks = new JList<Task>(listTasksModel);
         scrollPaneListTasks = new JScrollPane(listTasks);
-        txtTaskDetails = new JTextArea();
         taskEditPanel = new TaskEditPanel(this);
 
         statusPanel = new JPanel();
@@ -94,7 +93,6 @@ public class GSMainWindow implements ToolWindowFactory {
         btnLoadCalendarInfo.setBounds(300, 40, 100, 25);
         scrollPaneListUserStories.setBounds(10, 90, 150, 200);
         scrollPaneListTasks.setBounds(170, 90, 150, 200);
-        txtTaskDetails.setBounds(330, 90, 500, 200);
         btnAddNewTask.setBounds(10, 295, 100, 30);
         btnSaveTask.setBounds(120, 295, 100, 30);
         btnEditTask.setBounds(220, 295, 100, 30);
@@ -103,7 +101,6 @@ public class GSMainWindow implements ToolWindowFactory {
         contentPanel.setLayout(null);
         contentPanel.setBorder(new BevelBorder(BevelBorder.RAISED));
 
-        txtTaskDetails.setLineWrap(true);
         statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
         statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
         statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
@@ -120,7 +117,6 @@ public class GSMainWindow implements ToolWindowFactory {
         contentPanel.add(cbxChooseCalendar);
         contentPanel.add(scrollPaneListUserStories);
         contentPanel.add(scrollPaneListTasks);
-        contentPanel.add(txtTaskDetails);
         contentPanel.add(btnAddNewTask);
         contentPanel.add(btnSaveTask);
         contentPanel.add(btnEditTask);
@@ -275,18 +271,15 @@ public class GSMainWindow implements ToolWindowFactory {
     }
 
     private void taskSelectionChangedAction() {
-        txtTaskDetails.setText("");
         Task task = listTasks.getSelectedValue();
         if (task != null) {
             taskEditPanel.populateWithTask(task, listUserStories.getModel(), true);
             taskEditPanel.setEditable(false);
-            txtTaskDetails.setText(task.getAllInfo());
         }
     }
 
     private void userStorySelectionChangedAction() {
         listTasksModel.clear();
-        txtTaskDetails.setText("");
 
         System.out.println("Events list selection changed");
         UserStory userStory = listUserStories.getSelectedValue();
@@ -298,18 +291,20 @@ public class GSMainWindow implements ToolWindowFactory {
     }
 
     private void saveTaskAction() {
-        System.out.println("---- SAVING TASK");
         Task task = taskEditPanel.retrieveTaskObject();
-        System.out.println(task.getAllInfo());
+//        System.out.println(task.getAllInfo());
 
-        GoogleCalendarConnector.getInstance().saveTask(task.convertToGoogleTask());
-    }
+        if(isInAddNewTaskMode){
+            controller.saveNewTask(task);
+        }
+}
 
     private void addNewTaskAction() {
         Task task = new Task();
         task.setDescription("Enter description here....");
         task.setId("Set id...");
         taskEditPanel.populateWithTask(task, listUserStories.getModel(), false);
+        taskEditPanel.setEditable(true);
     }
 
     private void loadCalendarAction() {
@@ -348,13 +343,13 @@ public class GSMainWindow implements ToolWindowFactory {
                 btnLoadCalendarInfo.setEnabled(isUserLogged);
                 cbxChooseProfile.setEnabled(!isUserLogged);
                 btnAddNewProfile.setVisible(!isUserLogged);
+                btnDeleteProfile.setVisible(!isUserLogged);
 
                 lblChooseCalendar.setVisible(isUserLogged);
                 cbxChooseCalendar.setVisible(isUserLogged);
                 btnLoadCalendarInfo.setVisible(isUserLogged);
                 scrollPaneListTasks.setVisible(isUserLogged);
                 scrollPaneListUserStories.setVisible(isUserLogged);
-                txtTaskDetails.setVisible(isUserLogged);
                 taskEditPanel.setVisible(isUserLogged);
                 btnAddNewTask.setVisible(isUserLogged);
                 btnSaveTask.setVisible(isUserLogged);
@@ -372,7 +367,6 @@ public class GSMainWindow implements ToolWindowFactory {
         System.out.println("Clearing all");
         listUserStoriesModel.clear();
         listTasksModel.clear();
-        txtTaskDetails.setText("");
         cbxChooseCalendarModel.removeAllElements();
         taskEditPanel.clearData();
     }
@@ -392,5 +386,9 @@ public class GSMainWindow implements ToolWindowFactory {
 
     public void displayErrorDialog(String errorText) {
         JOptionPane.showMessageDialog(container, errorText, "Error!", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void displayInfoDialog(String message) {
+        JOptionPane.showMessageDialog(container, message, "Info!", JOptionPane.INFORMATION_MESSAGE);
     }
 }

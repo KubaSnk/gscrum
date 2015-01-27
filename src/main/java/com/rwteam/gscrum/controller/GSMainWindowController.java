@@ -20,9 +20,11 @@ public class GSMainWindowController {
 
     private GSMainWindow view;
     private boolean userLogged;
+    private DataProvider dataProvider;
 
     public GSMainWindowController(GSMainWindow gsMainWindow) {
         this.view = gsMainWindow;
+        this.dataProvider = new DataProvider();
     }
 
     public void login(String profileName) {
@@ -37,6 +39,8 @@ public class GSMainWindowController {
             String userName = GoogleCalendarConnector.getInstance().connect(profileName);
             view.setStatus("Successfully logged as " + userName);
             view.populateCalendarComboBox(GoogleCalendarConnector.getInstance().getCalendars().getItems());
+            dataProvider = new DataProvider();
+            dataProvider.refreshTasksInfo();
             setUserLogged(true);
         } catch (Exception e1) {
             view.setStatus("Error while logging");
@@ -126,5 +130,24 @@ public class GSMainWindowController {
             view.displayErrorDialog("Cannot remove profile '" + profileName + "'");
             logger.logError(e);
         }
+    }
+
+    public void saveNewTask(Task task) {
+        dataProvider.refreshTasksInfo();
+        if (existsTaskWithID(task.getId())) {
+            view.displayErrorDialog("Cannot add task. Task with id '" + task.getId() + "' currently exists!");
+        } else {
+            GoogleCalendarConnector.getInstance().saveTask(task.convertToGoogleTask());
+            view.displayInfoDialog("Task succesfully added!");
+        }
+    }
+
+    private boolean existsTaskWithID(String id) {
+        for (Task taks : dataProvider.getTasks()) {
+            if (taks.getId() != null && taks.getId().equals(id)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

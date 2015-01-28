@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.rwteam.gscrum.controller.GSMainWindowController;
-import com.rwteam.gscrum.controller.googleapi.GoogleCalendarConnector;
 import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
 
@@ -231,6 +230,44 @@ public class GSMainWindow implements ToolWindowFactory {
 
             }
         });
+
+        listUserStories.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    userStoryDoubleClickedAction();
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+    }
+
+    private void userStoryDoubleClickedAction() {
+        UserStory userStory = getSelectedUserStory();
+        if(getSelectedUserStory()!=null){
+            JOptionPane.showMessageDialog(container, userStory.getAllInfo(), userStory.getId(), JOptionPane.INFORMATION_MESSAGE);
+        }else {
+            displayErrorDialog("Incorrect user strory!");
+        }
     }
 
 
@@ -296,12 +333,12 @@ public class GSMainWindow implements ToolWindowFactory {
         Task task = taskEditPanel.retrieveTaskObject();
 //        System.out.println(task.getAllInfo());
 
-        if(isInAddNewTaskMode){
+        if (isInAddNewTaskMode) {
             controller.saveNewTask(task);
         } else {
             controller.updateTask(task);
         }
-}
+    }
 
     private void addNewTaskAction() {
         Task task = new Task();
@@ -315,7 +352,7 @@ public class GSMainWindow implements ToolWindowFactory {
     private void loadCalendarAction() {
         listUserStoriesModel.clear();
         String currentCalendarId = (String) cbxChooseCalendarModel.getSelectedItem();
-        DefaultListModel<UserStory> defaultListModel = controller.loadCalendarsInfo(currentCalendarId);
+        DefaultListModel<UserStory> defaultListModel =  controller.loadCalendarsInfo(currentCalendarId);
         listUserStories.setModel(defaultListModel);
         setStatus("Refreshed calendar info at " + new Date());
     }
@@ -400,5 +437,9 @@ public class GSMainWindow implements ToolWindowFactory {
     public boolean displayYesNoDialog(String question, String title) {
         int dialogResult = JOptionPane.showConfirmDialog(null, question, title, JOptionPane.YES_NO_OPTION);
         return dialogResult == JOptionPane.YES_OPTION;
+    }
+
+    public UserStory getSelectedUserStory() {
+        return listUserStories.getSelectedValue();
     }
 }

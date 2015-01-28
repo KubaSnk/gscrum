@@ -24,19 +24,18 @@ public class UserStoryParser {
 
         String value = event.getDescription();
 
-
         Event event1 = new Event();
         UserStory userStory = new UserStory();
 
-
         userStory.setId(cutoutValueFromTag(value, "id"));
-        userStory.setDeadlineDate( parseDate(cutoutValueFromTag(value, "deadline_date")) );
-        userStory.setStartDate( parseDate( cutoutValueFromTag(value, "start_date") ) );
+        userStory.setDeadlineDate(parseDate(cutoutValueFromTag(value, "deadline_date")));
 
-
-//        Date startDate = new Date(Date.parse(ParsersUtils.cutoutValueFromTag(value, "start_date")));
-//        userStory.setStartDate(startDate);
-
+        if (event.getStart() != null && event.getStart().getDateTime() != null) {
+            userStory.setStartDate(new Date(event.getStart().getDateTime().getValue()));
+        }
+        if (event.getEnd() != null && event.getEnd().getDateTime() != null) {
+            userStory.setEndDate(new Date(event.getEnd().getDateTime().getValue()));
+        }
 
         List<Task> taskList = new ArrayList<>();
         String tasksString = cutoutValueFromTag(value, "tasks");

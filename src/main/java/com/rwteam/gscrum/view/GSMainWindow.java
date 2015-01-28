@@ -36,6 +36,7 @@ public class GSMainWindow implements ToolWindowFactory {
     private JButton btnLoadCalendarInfo;
     private DefaultComboBoxModel<String> cbxChooseCalendarModel;
     private JComboBox<String> cbxChooseCalendar;
+    private TimelinePanel timelinePanel;
 
     private JPanel statusPanel;
     private JLabel statusLabel;
@@ -78,6 +79,7 @@ public class GSMainWindow implements ToolWindowFactory {
         listTasks = new JList<Task>(listTasksModel);
         scrollPaneListTasks = new JScrollPane(listTasks);
         taskEditPanel = new TaskEditPanel(this);
+        timelinePanel = new TimelinePanel();
 
         statusPanel = new JPanel();
         statusLabel = new JLabel("status");
@@ -96,6 +98,7 @@ public class GSMainWindow implements ToolWindowFactory {
         btnSaveTask.setBounds(120, 295, 100, 30);
         btnEditTask.setBounds(220, 295, 100, 30);
         taskEditPanel.setBounds(10, 330, 600, 500);
+        timelinePanel.setBounds(10, 400, 500, 100);
 
         contentPanel.setLayout(null);
         contentPanel.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -120,6 +123,7 @@ public class GSMainWindow implements ToolWindowFactory {
         contentPanel.add(btnSaveTask);
         contentPanel.add(btnEditTask);
         contentPanel.add(taskEditPanel);
+        contentPanel.add(timelinePanel);
 
         container.add(statusPanel, BorderLayout.SOUTH);
         statusPanel.add(statusLabel);

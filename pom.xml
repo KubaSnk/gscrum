@@ -88,8 +88,11 @@
             <artifactId>google-api-services-tasks</artifactId>
             <version>v1-rev35-1.19.0</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.19</version>
+        </dependency>
         <dependency>
             <groupId>com.google.http-client</groupId>
             <artifactId>google-http-client-jackson2</artifactId>

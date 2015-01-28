@@ -2,16 +2,16 @@
     <id>com.rwteam.gscrum</id>
     <name>gscrum</name>
     <version>1.0</version>
-    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">GScrum Team</vendor>
+    <vendor email="gscrumteam@gmail.com" url="about:blank">GScrum Team</vendor>
 
     <description><![CDATA[
-      Enter short description for your plugin here.<br>
-      <em>most HTML tags may be used</em>
+      GScrum plugin for Google Calendar and Google Task integration.<br>
+
     ]]></description>
 
     <change-notes><![CDATA[
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>
+      1.0 Initial deployment.<br>
+
     ]]>
     </change-notes>
 

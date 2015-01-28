@@ -1,6 +1,8 @@
 package com.rwteam.gscrum.controller.googleapi;
 
+import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventDateTime;
 import com.google.common.collect.Lists;
 import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DataProviderTest {
 
+    public static final java.util.Date START_DATE = new GregorianCalendar(2014, Calendar.NOVEMBER, 25).getTime();
     @Mock
     private GoogleCalendarConnector connector;
     @InjectMocks
@@ -35,6 +38,9 @@ public class DataProviderTest {
     public void shouldGetUserStories() throws IOException {
         final String calendarId = "1";
         final Event event1 = new Event();
+        EventDateTime start = new EventDateTime();
+        start.setDateTime(new DateTime(START_DATE));
+        event1.setStart(start);
         event1.setDescription("<id>Milestone 1</id>\n" +
                 "        <start_date>25-11-2014</start_date>\n" +
                 "        <deadline_date>09-12-2014</deadline_date>\n" +
@@ -74,7 +80,7 @@ public class DataProviderTest {
 
         UserStory userStory = userStories.get(0);
         assertThat(userStory.getId(), equalTo("Milestone 1"));
-        assertThat( userStory.getStartDate(), equalTo(new GregorianCalendar(2014, Calendar.NOVEMBER, 25).getTime()) );
+        assertThat( userStory.getStartDate(), equalTo(START_DATE) );
         assertThat(userStory.getDeadlineDate(), equalTo(new GregorianCalendar(2014, Calendar.DECEMBER, 9).getTime()));
 
         List<Task> tasks = userStory.getTaskCollection();

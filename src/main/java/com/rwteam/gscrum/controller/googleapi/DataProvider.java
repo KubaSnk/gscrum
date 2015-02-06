@@ -6,7 +6,6 @@ import com.rwteam.gscrum.controller.parsers.UserStoryParser;
 import com.rwteam.gscrum.model.Task;
 import com.rwteam.gscrum.model.UserStory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +21,7 @@ public class DataProvider {
     GoogleCalendarConnector connector = getInstance();
 
 
-    public List<UserStory> getUserStories(String calendarID) throws IOException {
+    public List<UserStory> getUserStories(String calendarID) {
         refreshTasksInfo();
         if (userStoriesCache == null) {
             refreshUserStoriesInfo(calendarID);
@@ -30,10 +29,13 @@ public class DataProvider {
         return userStoriesCache;
     }
 
-    private void refreshUserStoriesInfo(String calendarID) throws IOException {
+    public void refreshUserStoriesInfo(String calendarID) {
         userStoriesCache = new ArrayList<>();
         for (Event event : connector.getEventsForCalendarID(calendarID)) {
-            userStoriesCache.add(UserStoryParser.parseUserStory(event, this));
+            if (event.getSummary() != null) {
+                userStoriesCache.add(UserStoryParser.parseUserStory(event, this));
+
+            }
         }
         Collections.sort(userStoriesCache);
     }
@@ -60,6 +62,15 @@ public class DataProvider {
         for (Task task : getTasks()) {
             if (task != null && task.getId() != null && task.getId().equals(taskId)) {
                 return task;
+            }
+        }
+        return null;
+    }
+
+    public UserStory getUserStory(String id, String calendarId) {
+        for (UserStory userStory : getUserStories(calendarId)) {
+            if (userStory != null && userStory.getId() != null && (userStory.getId().equals(id))) {
+                return userStory;
             }
         }
         return null;

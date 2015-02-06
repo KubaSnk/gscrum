@@ -7,11 +7,12 @@ public class ParsersUtils {
 
     public static String cutoutValueFromTag(String value, String tag) {
         String result = "";
-
-        value = value.trim();
-        String[] split = value.split("<" + tag + ">");
-        if (split.length > 1) {
-            result = split[1].trim().split("</" + tag + ">")[0].trim();
+        if (value != null) {
+            value = value.trim();
+            String[] split = value.split("<" + tag + ">");
+            if (split.length > 1) {
+                result = split[1].trim().split("</" + tag + ">")[0].trim();
+            }
         }
         return result;
     }

@@ -28,8 +28,13 @@ public class UserStoryParser {
         UserStory userStory = new UserStory();
 
         userStory.setId(cutoutValueFromTag(value, "id"));
-        userStory.setDeadlineDate(parseDate(cutoutValueFromTag(value, "deadline_date")));
-
+        if (userStory.getId() == null || userStory.getId().equals("")) {
+            userStory.setId(event.getSummary());
+        }
+        userStory.setDescription(cutoutValueFromTag(value, "description"));
+        if (value != null) {
+            userStory.setDeadlineDate(parseDate(cutoutValueFromTag(value, "deadline_date")));
+        }
         if (event.getStart() != null && event.getStart().getDateTime() != null) {
             userStory.setStartDate(new Date(event.getStart().getDateTime().getValue()));
         }
@@ -39,23 +44,26 @@ public class UserStoryParser {
 
         List<Task> taskList = new ArrayList<>();
         String tasksString = cutoutValueFromTag(value, "tasks");
-        String[] tasks = value.split("<task>");
-        for (int i = 1; i < tasks.length; i++) {
-            String currentTask = tasks[i].split("</task>")[0];
-            String taskId = cutoutValueFromTag(currentTask, "id");
-            Task task = dataProvider.getTask(taskId);
+        if (value != null) {
+            String[] tasks = value.split("<task>");
+            for (int i = 1; i < tasks.length; i++) {
+                String currentTask = tasks[i].split("</task>")[0];
+                String taskId = cutoutValueFromTag(currentTask, "id");
+                Task task = dataProvider.getTask(taskId);
 
-            if (task == null) {
-                task = new Task();
-                task.setDescription(currentTask);
-                task.setId(INCORRECT_TASK_INFO);
+                if (task == null) {
+                    task = new Task();
+                    task.setDescription(currentTask);
+                    task.setId(INCORRECT_TASK_INFO);
+                }
+                task.setUserStory(userStory);
+                taskList.add(task);
+
+
             }
-            task.setUserStory(userStory);
-            taskList.add(task);
-
-
+            Collections.sort(taskList);
         }
-        Collections.sort(taskList);
+        userStory.setGoogleApiId(event.getId());
         userStory.setTaskCollection(taskList);
         return userStory;
     }
@@ -66,7 +74,7 @@ public class UserStoryParser {
             date = org.apache.commons.lang3.time.DateUtils.parseDate(deadline_date, new String[]{"dd-MM-yyyy"});
         } catch (ParseException e) {
             new Logger(UserStoryParser.class).logError(e);
-            e.printStackTrace();
+            date = new Date();
         }
         return org.apache.commons.lang3.time.DateUtils.round(date, Calendar.DAY_OF_MONTH);
     }

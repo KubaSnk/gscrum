@@ -117,6 +117,7 @@ public class GoogleCalendarConnector {
         try {
             tasks = tasksClient.tasks().list("@default").execute().getItems();
         } catch (IOException e) {
+            logger.logError(e);
             e.printStackTrace();
         }
         return tasks;
@@ -126,8 +127,14 @@ public class GoogleCalendarConnector {
         return calendarClient.calendarList().list().execute();
     }
 
-    public List<Event> getEventsForCalendarID(String calendarID) throws IOException {
-        return calendarClient.events().list(calendarID).execute().getItems();
+    public List<Event> getEventsForCalendarID(String calendarID) {
+        List<Event> returnList = new ArrayList<>();
+        try {
+            returnList = calendarClient.events().list(calendarID).execute().getItems();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return returnList;
     }
 
     public String connect(String profileName) throws Exception {
@@ -174,6 +181,28 @@ public class GoogleCalendarConnector {
             try {
                 Task result = tasksClient.tasks().update("@default", task.getId(), task).execute();
                 logger.log("Updated task " + result.getId());
+            } catch (IOException e) {
+                logger.logError(e);
+            }
+        }
+    }
+
+    public void updateUserStory(Event event, String calendarId) {
+        if (event != null) {
+            try {
+                calendarClient.events().update(calendarId, event.getId(), event).execute();
+                logger.log("Updated user story " + event.getId());
+            } catch (IOException e) {
+                logger.logError(e);
+            }
+        }
+    }
+
+    public void saveUserStory(Event event, String calendarId) {
+        if (event != null) {
+            try {
+                calendarClient.events().insert(calendarId, event).execute();
+                logger.log("Saved US: " + event.getId());
             } catch (IOException e) {
                 logger.logError(e);
             }

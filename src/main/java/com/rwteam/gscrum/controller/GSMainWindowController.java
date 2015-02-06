@@ -18,10 +18,10 @@ import java.util.Map;
  */
 public class GSMainWindowController {
     private final Logger logger = new Logger(this.getClass());
-
     private GSMainWindow view;
     private boolean userLogged;
     private DataProvider dataProvider;
+    private String currentCalendarId;
 
     public GSMainWindowController(GSMainWindow gsMainWindow) {
         this.view = gsMainWindow;
@@ -55,19 +55,17 @@ public class GSMainWindowController {
     }
 
     public DefaultListModel<UserStory> loadCalendarsInfo(String currentCalendarId) {
+        this.currentCalendarId = currentCalendarId;
         DefaultListModel defaultListModel = new DefaultListModel();
-        try {
-            if (currentCalendarId != null) {
-                DataProvider dataProvider = new DataProvider();
-                Collection<UserStory> userStories = dataProvider.getUserStories(currentCalendarId);
-                for (UserStory userStory : userStories) {
-                    defaultListModel.addElement(userStory);
-                }
-                System.out.println("------------- PRINTING TASKS");
-                Collection<Task> tasks = dataProvider.getTasks();
-                for (Task task : tasks) {
-                    System.out.println(task.getAllInfo());
-                }
+        if (currentCalendarId != null) {
+            DataProvider dataProvider = new DataProvider();
+            Collection<UserStory> userStories = dataProvider.getUserStories(currentCalendarId);
+            for (UserStory userStory : userStories) {
+                defaultListModel.addElement(userStory);
+            }
+//            System.out.println("------------- PRINTING TASKS");
+            Collection<Task> tasks = dataProvider.getTasks();
+
 //
 //                        java.util.List<com.google.api.services.calendar.model.Event> items = GoogleCalendarConnector.getInstance().getEventsForCalendarID(currentCalendarId);
 //                        for (com.google.api.services.calendar.model.Event ev : items) {
@@ -75,14 +73,10 @@ public class GSMainWindowController {
 //                            if (ev != null && ev.getDescription() != null)
 //                                listUserStoriesModel.addElement(ev.getDescription());
 //                        }
-            }
-        } catch (IOException e2) {
-            e2.printStackTrace();
         }
 
         return defaultListModel;
     }
-
 
     public void loginOrLogout(String profileName) {
         if (isUserLogged()) {
@@ -138,6 +132,15 @@ public class GSMainWindowController {
         if (existsTaskWithID(task.getId())) {
             view.displayErrorDialog("Cannot add task. Task with id '" + task.getId() + "' currently exists!");
         } else {
+            task.getUserStory().getGoogleApiId();
+//            dataProvider.getUserStories(currentCalendarId);
+            UserStory userStory = dataProvider.getUserStory(task.getUserStory().getId(), currentCalendarId);
+            if (userStory != null) {
+                userStory.getTaskCollection().add(task);
+                updateUserStory(userStory);
+            }
+
+
             GoogleCalendarConnector.getInstance().saveTask(task.convertToGoogleTask());
             view.displayInfoDialog("Task succesfully added!");
         }
@@ -163,6 +166,24 @@ public class GSMainWindowController {
             String changesetString = getChangesetString(changesSet);
             boolean questionResult = view.displayYesNoDialog("Do you really want to update task: " + existingTask.getId() + "?" + "\n" + changesetString, "Update task?");
 //            GoogleCalendarConnector.getInstance().saveTask(task.convertToGoogleTask());
+
+
+            // TODO !!!!!!!!!!!!!!!!!!!!!
+            Task old = dataProvider.getTask(task.getId());
+            if (old != null && old.getUserStory() != null) {
+                UserStory userStoryOld = dataProvider.getUserStory(old.getUserStory().getId(), currentCalendarId);
+                if (userStoryOld != null) {
+                    userStoryOld.removeTask(old);
+                    updateUserStory(userStoryOld);
+                }
+            }
+
+            UserStory userStory = dataProvider.getUserStory(task.getUserStory().getId(), currentCalendarId);
+            if (userStory != null) {
+                userStory.getTaskCollection().add(task);
+                updateUserStory(userStory);
+            }
+
             if (questionResult) {
                 GoogleCalendarConnector.getInstance().updateTask(task.convertToGoogleTask());
                 view.displayInfoDialog("Task succesfully updated!");
@@ -176,5 +197,55 @@ public class GSMainWindowController {
             sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
         }
         return sb.toString();
+    }
+
+    public void saveNewUserStory(UserStory userStory) {
+        try {
+            dataProvider.refreshUserStoriesInfo(currentCalendarId);
+            dataProvider.getUserStories(currentCalendarId);
+
+            if (existsUserStoryWithID(userStory.getId())) {
+                view.displayErrorDialog("Cannot add User Story. US with id '" + userStory.getId() + "' currently exists!");
+            } else {
+                GoogleCalendarConnector.getInstance().saveUserStory(userStory.convertToGoogleEventy(), currentCalendarId);
+                view.displayInfoDialog("User story succesfully added!");
+            }
+        } catch (IOException e) {
+            logger.logError(e);
+            e.printStackTrace();
+        }
+    }
+
+
+    private boolean existsUserStoryWithID(String id) throws IOException {
+        for (UserStory userStory : dataProvider.getUserStories(currentCalendarId)) {
+            if (userStory.getId() != null && userStory.getId().equals(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public void updateUserStory(UserStory userStory) {
+        logger.log("Updating US with id: " + userStory.getId());
+        try {
+            dataProvider.refreshUserStoriesInfo(currentCalendarId);
+            if (!existsUserStoryWithID(userStory.getId())) {
+                view.displayErrorDialog("Cannot update task. Task does not exists!");
+            } else {
+                UserStory existingUS = dataProvider.getUserStory(userStory.getId(), currentCalendarId);
+                Map<String, String> changesSet = existingUS.getChangesSet(userStory);
+                String changesetString = getChangesetString(changesSet);
+                boolean questionResult = view.displayYesNoDialog("Do you really want to update US: " + existingUS.getId() + "?" + "\n" + changesetString, "Update User Story?");
+//            GoogleCalendarConnector.getInstance().saveTask(task.convertToGoogleTask());
+                if (questionResult) {
+                    GoogleCalendarConnector.getInstance().updateUserStory(userStory.convertToGoogleEventy(), currentCalendarId);
+                    view.displayInfoDialog("User Story succesfully updated!");
+                }
+            }
+        } catch (IOException e) {
+            logger.logError(e);
+        }
     }
 }

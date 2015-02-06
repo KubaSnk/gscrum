@@ -31,6 +31,8 @@ public class GSMainWindow implements ToolWindowFactory {
     private JButton btnAddNewTask;
     private JButton btnSaveTask;
     private JButton btnEditTask;
+    private JButton btnAddUserStory;
+    private JButton btnEditUserStory;
     private JButton btnAddNewProfile;
     private JButton btnDeleteProfile;
     private JButton btnLoadCalendarInfo;
@@ -66,9 +68,11 @@ public class GSMainWindow implements ToolWindowFactory {
         btnAddNewTask = new JButton("New task");
         btnSaveTask = new JButton("Save task");
         btnEditTask = new JButton("Edit task");
+        btnAddUserStory = new JButton("New US");
+        btnEditUserStory = new JButton("Edit US");
         btnAddNewProfile = new JButton("Add new");
         btnDeleteProfile = new JButton("Delete");
-        btnLoadCalendarInfo = new JButton("Load calendar");
+        btnLoadCalendarInfo = new JButton("Load/Refresh");
         lblChooseCalendar = new JLabel("Calendar");
         cbxChooseCalendarModel = new DefaultComboBoxModel<String>();
         cbxChooseCalendar = new JComboBox<String>(cbxChooseCalendarModel);
@@ -92,13 +96,16 @@ public class GSMainWindow implements ToolWindowFactory {
         lblChooseCalendar.setBounds(10, 40, 100, 25);
         cbxChooseCalendar.setBounds(100, 40, 200, 25);
         btnLoadCalendarInfo.setBounds(300, 40, 100, 25);
-        scrollPaneListUserStories.setBounds(10, 90, 150, 200);
-        scrollPaneListTasks.setBounds(170, 90, 150, 200);
+        scrollPaneListUserStories.setBounds(10, 80, 150, 150);
+        scrollPaneListTasks.setBounds(170, 80, 150, 150);
+        btnAddUserStory.setBounds(10, 260, 100, 30);
+        btnEditUserStory.setBounds(220, 260, 100, 30);
         btnAddNewTask.setBounds(10, 295, 100, 30);
         btnSaveTask.setBounds(120, 295, 100, 30);
         btnEditTask.setBounds(220, 295, 100, 30);
         taskEditPanel.setBounds(10, 330, 600, 500);
         timelinePanel.setBounds(10, 400, 500, 100);
+
 
         contentPanel.setLayout(null);
         contentPanel.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -119,6 +126,8 @@ public class GSMainWindow implements ToolWindowFactory {
         contentPanel.add(cbxChooseCalendar);
         contentPanel.add(scrollPaneListUserStories);
         contentPanel.add(scrollPaneListTasks);
+        contentPanel.add(btnAddUserStory);
+        contentPanel.add(btnEditUserStory);
         contentPanel.add(btnAddNewTask);
         contentPanel.add(btnSaveTask);
         contentPanel.add(btnEditTask);
@@ -168,6 +177,20 @@ public class GSMainWindow implements ToolWindowFactory {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadCalendarAction();
+            }
+        });
+
+        btnAddUserStory.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addUserStoryAction();
+            }
+        });
+
+        btnEditUserStory.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                editUserStoryAction();
             }
         });
 
@@ -265,11 +288,21 @@ public class GSMainWindow implements ToolWindowFactory {
         });
     }
 
+    private void editUserStoryAction() {
+        if(getSelectedUserStory() != null){
+            new UserStoryEditWindow(this, getSelectedUserStory());
+        }
+    }
+
+    private void addUserStoryAction() {
+        new UserStoryEditWindow(this, null);
+    }
+
     private void userStoryDoubleClickedAction() {
         UserStory userStory = getSelectedUserStory();
-        if(getSelectedUserStory()!=null){
+        if (getSelectedUserStory() != null) {
             JOptionPane.showMessageDialog(container, userStory.getAllInfo(), userStory.getId(), JOptionPane.INFORMATION_MESSAGE);
-        }else {
+        } else {
             displayErrorDialog("Incorrect user strory!");
         }
     }
@@ -277,6 +310,7 @@ public class GSMainWindow implements ToolWindowFactory {
 
     private void editTaskAction() {
         taskEditPanel.setEditable(true, isInAddNewTaskMode);
+//        btnSaveTask.setEnabled(false);
         isInAddNewTaskMode = false;
     }
 
@@ -356,7 +390,7 @@ public class GSMainWindow implements ToolWindowFactory {
     private void loadCalendarAction() {
         listUserStoriesModel.clear();
         String currentCalendarId = (String) cbxChooseCalendarModel.getSelectedItem();
-        DefaultListModel<UserStory> defaultListModel =  controller.loadCalendarsInfo(currentCalendarId);
+        DefaultListModel<UserStory> defaultListModel = controller.loadCalendarsInfo(currentCalendarId);
         listUserStories.setModel(defaultListModel);
         setStatus("Refreshed calendar info at " + new Date());
     }
@@ -397,6 +431,8 @@ public class GSMainWindow implements ToolWindowFactory {
                 scrollPaneListTasks.setVisible(isUserLogged);
                 scrollPaneListUserStories.setVisible(isUserLogged);
                 taskEditPanel.setVisible(isUserLogged);
+                btnAddUserStory.setVisible(isUserLogged);
+                btnEditUserStory.setVisible(isUserLogged);
                 btnAddNewTask.setVisible(isUserLogged);
                 btnSaveTask.setVisible(isUserLogged);
                 btnEditTask.setVisible(isUserLogged);
@@ -445,5 +481,13 @@ public class GSMainWindow implements ToolWindowFactory {
 
     public UserStory getSelectedUserStory() {
         return listUserStories.getSelectedValue();
+    }
+
+    public void saveNewUS(UserStory userStory) {
+        controller.saveNewUserStory(userStory);
+    }
+
+    public void updateUS(UserStory userStory) {
+        controller.updateUserStory(userStory);
     }
 }

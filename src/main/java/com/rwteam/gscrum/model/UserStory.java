@@ -1,12 +1,28 @@
 package com.rwteam.gscrum.model;
 
+import com.google.api.client.util.ArrayMap;
+import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventDateTime;
+
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wrabel on 12/1/2014.
  */
 public class UserStory implements Comparable {
+    public static final UserStory EMPTY = new UserStory();
+
+    static {
+        EMPTY.setGoogleApiId("");
+        EMPTY.setEndDate(new Date());
+        EMPTY.setStartDate(new Date());
+        EMPTY.setId("Set US name");
+        EMPTY.setDescription("Enter description");
+    }
+
     String id;
     String author;
     String title;
@@ -20,6 +36,7 @@ public class UserStory implements Comparable {
     Integer estimatedStoryPoints;
     Integer spentStoryPoints;
     List<Task> taskCollection;
+    private String googleApiId;
 
     public List<Task> getTaskCollection() {
         return taskCollection;
@@ -142,25 +159,104 @@ public class UserStory implements Comparable {
                 "\nstatus='" + status + '\'' +
                 "\nstartDate=" + startDate +
                 "\nendDate=" + endDate +
-                "\ndeadlineDate='" + deadlineDate + '\'' +
                 "\n}";
     }
 
-//    @Override
-//    public String toString() {
-//        return "UserStory{" +
-//                "id='" + id + '\'' +
-//                ", author='" + author + '\'' +
-//                ", title='" + title + '\'' +
-//                ", description='" + description + '\'' +
-//                ", priority='" + priority + '\'' +
-//                ", status='" + status + '\'' +
-//                ", startDate=" + startDate +
-//                ", endDate=" + endDate +
-//                ", deadlineDate=" + deadlineDate +
-//                ", estimatedStoryPoints=" + estimatedStoryPoints +
-//                ", spentStoryPoints=" + spentStoryPoints +
-//                ", taskCollection=" + taskCollection +
-//                '}';
-//    }
+    public String getGoogleApiId() {
+        return googleApiId;
+    }
+
+    public void setGoogleApiId(String googleApiId) {
+        this.googleApiId = googleApiId;
+    }
+
+    public Map<String, String> getChangesSet(UserStory userStoryToCompare) {
+        Map<String, String> changes = new ArrayMap<>();
+
+        addToChangesetIfDifferent(getAuthor(), userStoryToCompare.getAuthor(), "author", changes);
+        addToChangesetIfDifferent(getDescription(), userStoryToCompare.getDescription(), "description", changes);
+        addToChangesetIfDifferent(getPriority(), userStoryToCompare.getPriority(), "priority", changes);
+        addToChangesetIfDifferent(getStatus(), userStoryToCompare.getStatus(), "status", changes);
+        addToChangesetIfDifferent(getEndDate(), userStoryToCompare.getEndDate(), "endDate", changes);
+        addToChangesetIfDifferent(getStartDate(), userStoryToCompare.getStartDate(), "startDate", changes);
+
+        return changes;
+    }
+
+    private void addToChangesetIfDifferent(Object value1, Object value2, String key, Map<String, String> changes) {
+        if (value1 == null && value2 != null || value1 != null && !value1.equals(value2)) {
+            changes.put(key, value1 + " -> " + value2);
+        }
+    }
+
+    public Event convertToGoogleEventy() {
+        Event event = new Event();
+        event.setId(getGoogleApiId());
+        StringBuilder sbNotes = new StringBuilder();
+        sbNotes.append("<user_story>");
+        event.setSummary(getId());
+
+//        if (getId() != null) {
+//            sbNotes.append("\n\t<id>" + getId() + "</id>");
+//        }
+        if (getDescription() != null) {
+            sbNotes.append("\n" +
+                    "\t<description>" + getDescription() + "</description>");
+        }
+
+        if (getAuthor() != null) {
+            sbNotes.append("\n" +
+                    "\t<author>" + getAuthor() + "</author>");
+        }
+        if (getPriority() != null) {
+            sbNotes.append("\n" +
+                    "\t<priority>" + getPriority() + "</priority>");
+        }
+        if (getStatus() != null) {
+            sbNotes.append("\n" +
+                    "\t<status>" + getStatus() + "</status>");
+        }
+
+        sbNotes.append("\n\t<tasks>");
+        if (getTaskCollection() != null) {
+            for (Task taks : getTaskCollection()) {
+                sbNotes.append("\n\t\t<task><id>");
+                sbNotes.append("\n\t\t\t" + taks.getId());
+                sbNotes.append("\n\t\t</id></task>");
+            }
+        }
+        sbNotes.append("\n\t</tasks>");
+        EventDateTime startDate = new EventDateTime();
+//        startDate.setDateTime()
+//        new EventDateTime().setDate(new DateTime(true, new Date(), 0));
+        startDate.setDateTime(new DateTime(getStartDate()));
+        event.setStart(startDate);
+
+//        event.set("start", "01-01-2015");
+//        event.set("end", "01-12-2015");
+//
+        EventDateTime endDate = new EventDateTime();
+        endDate.setDateTime(new DateTime(getEndDate()));
+        event.setEnd(endDate);
+
+
+        sbNotes.append("\n</user_story>");
+
+        event.setDescription(sbNotes.toString());
+
+
+        return event;
+    }
+
+    public void removeTask(Task old) {
+        if (taskCollection != null) {
+            for (int i = 0; i < getTaskCollection().size(); i++) {
+                Task current = getTaskCollection().get(i);
+                if (current.getId().equals(old.getId())) {
+                    getTaskCollection().remove(i);
+                    break;
+                }
+            }
+        }
+    }
 }
